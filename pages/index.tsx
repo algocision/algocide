@@ -18,15 +18,15 @@ import {
 import styles from '../src/styles/pages/index.module.css';
 import { IPageProps } from './_app';
 
+const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+
 const animate = (ref: React.MutableRefObject<any>) => {
   const ctx = ref.current.getContext('2d');
   const height = ref.current.height;
   const width = ref.current.width;
 
-  const characters =
-    `abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%+-/~{[|\`]}`.split(
-      ''
-    );
+  // abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%+-/~{[|\`]}
+  const characters = `01`.split('');
 
   const font_size = 10;
   const columns = Math.floor(width / font_size);
@@ -43,7 +43,7 @@ const animate = (ref: React.MutableRefObject<any>) => {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
     ctx.fillRect(0, 0, width, height);
 
-    ctx.fillStyle = '#64d86b'; //green text
+    ctx.fillStyle = '#64d86b';
     ctx.font = font_size + 'px arial';
     //looping over drops
     for (let i = 0; i < drops.length; i++) {
@@ -64,6 +64,7 @@ const animate = (ref: React.MutableRefObject<any>) => {
 };
 
 const Home: NextPage<IPageProps> = ({}) => {
+  const [activeBlink, setActiveBlink] = useState<boolean>(false);
   const canvasRef = useRef<any>();
   const textRef1 = useRef<any>();
 
@@ -84,6 +85,16 @@ const Home: NextPage<IPageProps> = ({}) => {
   }, [canvasRef, windowWidth, windowHeight]);
 
   useEffect(() => {
+    const blinkInit = async () => {
+      while (true) {
+        await sleep(500);
+        setActiveBlink(p => !p);
+      }
+    };
+    blinkInit();
+  }, []);
+
+  useEffect(() => {
     if (textRef1 && textRef1.current && windowWidth) {
       const width = textRef1.current.getComputedTextLength();
       const x = windowWidth / 2 - width / 2;
@@ -91,7 +102,7 @@ const Home: NextPage<IPageProps> = ({}) => {
     }
   }, [textRef1, windowWidth]);
 
-  useEffect(() => {}, [cursorX, cursorY]);
+  // useEffect(() => {}, [cursorX, cursorY]);
 
   return (
     <>
@@ -127,8 +138,8 @@ const Home: NextPage<IPageProps> = ({}) => {
             letterSpacing={`${windowWidth / 125}px`}
             fontFamily="Skygraze"
             paintOrder="stroke"
-            stroke="white"
-            strokeWidth="2px"
+            stroke="#64d86b"
+            strokeWidth="3px"
             strokeLinecap="butt"
             strokeLinejoin="miter"
           >
@@ -138,8 +149,8 @@ const Home: NextPage<IPageProps> = ({}) => {
             cx={cursorX}
             cy={cursorY}
             r="30px"
-            stroke="white"
-            strokeWidth="2px"
+            stroke="#64d86b"
+            strokeWidth="3px"
             strokeLinecap="butt"
             strokeLinejoin="miter"
             style={{ transition: ' 0.02s linear' }}
@@ -183,6 +194,14 @@ const Home: NextPage<IPageProps> = ({}) => {
           ref={canvasRef}
           className={styles.matrix}
         />
+
+        <div className={styles.navContainer}>
+          <div style={{ display: 'flex', width: `150px` }}>
+            <div className={styles.navItem}>{`C:> connect`}</div>
+            <div className={styles.navItem}>{activeBlink ? '_' : ''}</div>
+          </div>
+          {/* <div className={styles.navItem}>{`  explore`}</div> */}
+        </div>
       </div>
     </>
   );
