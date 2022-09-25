@@ -1,0 +1,24 @@
+.container {
+  position: relative;
+  background: var(--primary);
+  width: 100%;
+  height: 100%;
+  overflow-y: hidden;
+}
+
+.matrix {
+  object-fit: cover;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  clip-path: url(#clip-path);
+}
+
+.cursorDot {
+  position: absolute;
+  z-index: 99999999;
+  background-color: #64d86b;
+  border-radius: 50%;
+  width: 3px;
+  height: 3px;
+}
