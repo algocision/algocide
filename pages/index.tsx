@@ -1,22 +1,13 @@
-import { createEntries } from '@/src/db/create/createEntries';
-import { deleteEntries } from '@/src/db/delete/deleteEntries';
-import { readEntries } from '@/src/db/read/readEntries';
-import { updateEntries } from '@/src/db/update/updateEntries';
 import useCursor from '@/src/hooks/useCursor';
 import useWindow from '@/src/hooks/useWindow';
+import useArrowKeys from '@/src/hooks/useArrowKeys';
 import { NextPage } from 'next';
 import Head from 'next/head';
-import { IEntry } from 'prisma/schema';
-import {
-  LegacyRef,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styles from '../src/styles/pages/index.module.css';
 import { IPageProps } from './_app';
+import useClick from '@/src/hooks/useClick';
+import { isMobile } from 'react-device-detect';
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
@@ -64,7 +55,11 @@ const animate = (ref: React.MutableRefObject<any>) => {
 };
 
 const Home: NextPage<IPageProps> = ({}) => {
+  const [cursorPointer, setCursorPointer] = useState<boolean>(false);
+  const [stateInc, setStateInc] = useState<number>(0);
   const [activeBlink, setActiveBlink] = useState<boolean>(false);
+  const [selectedNavItem, setSelectedNavItem] = useState<0 | 1>(0);
+
   const canvasRef = useRef<any>();
   const textRef1 = useRef<any>();
 
@@ -77,6 +72,8 @@ const Home: NextPage<IPageProps> = ({}) => {
 
   const { windowWidth, windowHeight } = useWindow();
   const { cursorX, cursorY } = useCursor();
+  const { keys } = useArrowKeys();
+  const { clickActive } = useClick();
 
   useEffect(() => {
     if (canvasRef) {
@@ -91,8 +88,10 @@ const Home: NextPage<IPageProps> = ({}) => {
         setActiveBlink(p => !p);
       }
     };
-    blinkInit();
-  }, []);
+    if (stateInc === 0) {
+      blinkInit();
+    }
+  }, [stateInc]);
 
   useEffect(() => {
     if (textRef1 && textRef1.current && windowWidth) {
@@ -102,7 +101,20 @@ const Home: NextPage<IPageProps> = ({}) => {
     }
   }, [textRef1, windowWidth]);
 
-  // useEffect(() => {}, [cursorX, cursorY]);
+  useEffect(() => {
+    setStateInc(p => p + 1);
+  }, [stateInc]);
+
+  useEffect(() => {
+    if (keys.up === 1 && selectedNavItem > 0) {
+      setSelectedNavItem(0);
+      return;
+    }
+    if (keys.down === 1 && selectedNavItem < 1) {
+      setSelectedNavItem(1);
+      return;
+    }
+  }, [keys]);
 
   return (
     <>
@@ -145,26 +157,18 @@ const Home: NextPage<IPageProps> = ({}) => {
           >
             {`ALGOCIDE`}
           </text>
-          <circle
-            cx={cursorX}
-            cy={cursorY}
-            r="30px"
-            stroke="#64d86b"
-            strokeWidth="3px"
-            strokeLinecap="butt"
-            strokeLinejoin="miter"
-            style={{ transition: ' 0.02s linear' }}
-            // points={`${cursorX - 30},${cursorY - 30}, ${cursorX + 30},${
-            //   cursorY - 30
-            // }, ${cursorX + 30},${cursorY + 30}, ${cursorX - 30},${
-            //   cursorY + 30
-            // }`}
-          />
-          <clipPath id="clip-path">
+          {!isMobile && (
             <circle
+              className={
+                cursorPointer ? styles.cursorFollowHover : styles.cursorFollow
+              }
               cx={cursorX}
               cy={cursorY}
-              r="30px"
+              r="15px"
+              stroke={clickActive ? '#ff0000' : '#64d86b'}
+              strokeWidth="2px"
+              strokeLinecap="butt"
+              strokeLinejoin="miter"
               style={{ transition: ' 0.02s linear' }}
               // points={`${cursorX - 30},${cursorY - 30}, ${cursorX + 30},${
               //   cursorY - 30
@@ -172,6 +176,25 @@ const Home: NextPage<IPageProps> = ({}) => {
               //   cursorY + 30
               // }`}
             />
+          )}
+          <clipPath id="clip-path">
+            {!isMobile && (
+              <circle
+                className={
+                  cursorPointer ? styles.cursorFollowHover : styles.cursorFollow
+                }
+                cx={cursorX}
+                cy={cursorY}
+                // r={clickActive ? '1px' : '15px'}
+                r="15px"
+                style={{ transition: ' 0.02s linear' }}
+                // points={`${cursorX - 30},${cursorY - 30}, ${cursorX + 30},${
+                //   cursorY - 30
+                // }, ${cursorX + 30},${cursorY + 30}, ${cursorX - 30},${
+                //   cursorY + 30
+                // }`}
+              />
+            )}
             <text
               y="200"
               x={text1.x}
@@ -184,10 +207,16 @@ const Home: NextPage<IPageProps> = ({}) => {
           </clipPath>
         </svg>
 
-        <div
-          className={styles.cursorDot}
-          style={{ left: cursorX - 1.5, top: cursorY - 1.5 }}
-        />
+        {!isMobile && (
+          <div
+            className={styles.cursorDot}
+            style={{
+              left: cursorX - 1.5,
+              top: cursorY - 1.5,
+              backgroundColor: clickActive ? '#ff0000' : '#64d86b',
+            }}
+          />
+        )}
         <canvas
           width={windowWidth}
           height={windowHeight}
@@ -196,11 +225,54 @@ const Home: NextPage<IPageProps> = ({}) => {
         />
 
         <div className={styles.navContainer}>
-          <div style={{ display: 'flex', width: `150px` }}>
-            <div className={styles.navItem}>{`C:> connect`}</div>
-            <div className={styles.navItem}>{activeBlink ? '_' : ''}</div>
+          <div
+            style={{ display: 'flex', width: `100px`, padding: 10 }}
+            onMouseEnter={() => {
+              setCursorPointer(true);
+            }}
+            onMouseLeave={() => {
+              setCursorPointer(false);
+            }}
+            onClick={() => {
+              setSelectedNavItem(0);
+            }}
+          >
+            {selectedNavItem === 0 && (
+              <div
+                className={styles.navItem}
+                style={{ marginRight: 6, marginLeft: -14 }}
+              >
+                {`>`}
+              </div>
+            )}
+            <div className={styles.navItem}>{`connect`}</div>
+            {selectedNavItem === 0 && (
+              <div className={styles.navItem}>{activeBlink ? '_' : ''}</div>
+            )}
           </div>
-          {/* <div className={styles.navItem}>{`  explore`}</div> */}
+          <div
+            style={{ display: 'flex', width: `100px`, padding: 10 }}
+            onMouseEnter={() => {
+              setCursorPointer(true);
+            }}
+            onMouseLeave={() => {
+              setCursorPointer(false);
+            }}
+            onClick={() => {
+              setSelectedNavItem(1);
+            }}
+          >
+            {selectedNavItem === 1 && (
+              <div
+                className={styles.navItem}
+                style={{ marginRight: 6, marginLeft: -14 }}
+              >{`>`}</div>
+            )}
+            <div className={styles.navItem}>{`explore`}</div>
+            {selectedNavItem === 1 && (
+              <div className={styles.navItem}>{activeBlink ? '_' : ''}</div>
+            )}
+          </div>
         </div>
       </div>
     </>

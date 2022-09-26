@@ -1,3 +1,12 @@
+@keyframes cursorPointer {
+  from {
+    r: 15px;
+  }
+  to {
+    r: 3px;
+  }
+}
+
 .container {
   position: relative;
   background: var(--primary);
@@ -21,6 +30,13 @@
   border-radius: 50%;
   width: 3px;
   height: 3px;
+  pointer-events: none;
+}
+
+.cursorFollowHover {
+  animation-name: cursorPointer;
+  animation-duration: 0.5s;
+  animation-fill-mode: forwards;
 }
 
 .navContainer {
@@ -36,5 +52,5 @@
 
 .navItem {
   color: #64d86b;
-  font-family: 'Skygraze';
+  font-family: 'UbuntuMono';
 }

@@ -21,6 +21,11 @@
   src: url('../../asset/fonts/Skygraze.otf');
 }
 
+@font-face {
+  font-family: 'UbuntuMono';
+  src: url('../../asset//fonts/UbuntuMono-Regular.ttf');
+}
+
 * {
   margin: 0;
   padding: 0;
