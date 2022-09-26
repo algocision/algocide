@@ -18,12 +18,12 @@
 
 @font-face {
   font-family: 'Skygraze';
-  src: url('../../asset/fonts/Skygraze.otf');
+  src: url('/fonts/Skygraze.otf');
 }
 
 @font-face {
   font-family: 'UbuntuMono';
-  src: url('../../asset//fonts/UbuntuMono-Regular.ttf');
+  src: url('/fonts/UbuntuMono-Regular.ttf');
 }
 
 * {
