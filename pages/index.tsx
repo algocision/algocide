@@ -9,6 +9,7 @@ import { IPageProps } from './_app';
 import useClick from '@/src/hooks/useClick';
 import { isMobile } from 'react-device-detect';
 import Frame from '@/src/components/Modal/_core/Frame';
+import Modal from '@/src/components/Modal';
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
@@ -60,7 +61,15 @@ const Home: NextPage<IPageProps> = ({}) => {
   const [modalActive, setModalActive] = useState<boolean>(false);
   const [stateInc, setStateInc] = useState<number>(0);
   const [activeBlink, setActiveBlink] = useState<boolean>(false);
-  const [selectedNavItem, setSelectedNavItem] = useState<0 | 1>(0);
+  const [navItems, setNavItems] = useState<string[]>(['connect', 'explore']);
+  const [subNavItems, setSubNavItems] = useState<Record<number, string[]>>({
+    0: ['connect wallet', 'sign in', 'sign up'],
+    1: ['pcparttracker', 'themeit'],
+  });
+  const NAV_LEN = navItems.length;
+  const [selectedNavIndex, setSelectedNavIndex] = useState<number>(0);
+  const SUBNAV_LEN = { 0: subNavItems[0].length, 1: subNavItems[1].length };
+  const [subNavIndex, setSubNavIndex] = useState<number>(0);
 
   const canvasRef = useRef<any>();
   const textRef1 = useRef<any>();
@@ -109,21 +118,32 @@ const Home: NextPage<IPageProps> = ({}) => {
 
   useEffect(() => {
     if (keys.up === 1) {
-      if (selectedNavItem > 0) {
-        setSelectedNavItem(0);
-      } else {
-        setSelectedNavItem(1);
+      if (!modalActive) {
+        if (selectedNavIndex === 0) {
+          setSelectedNavIndex(NAV_LEN - 1);
+        } else {
+          setSelectedNavIndex(p => p - 1);
+        }
+        return;
       }
-      return;
+      setSubNavIndex(p =>
+        p === 0 ? (SUBNAV_LEN as any)[selectedNavIndex] - 1 : p - 1
+      );
     }
     if (keys.down === 1) {
-      if (selectedNavItem < 1) {
-        setSelectedNavItem(1);
-      } else {
-        setSelectedNavItem(0);
+      if (!modalActive) {
+        if (selectedNavIndex === NAV_LEN - 1) {
+          setSelectedNavIndex(0);
+        } else {
+          setSelectedNavIndex(p => p + 1);
+        }
+        return;
       }
-      return;
+      setSubNavIndex(p =>
+        p === (SUBNAV_LEN as any)[selectedNavIndex] - 1 ? 0 : p + 1
+      );
     }
+
     if (keys.enter === 1) {
       if (modalActive) {
         return;
@@ -132,6 +152,12 @@ const Home: NextPage<IPageProps> = ({}) => {
       return;
     }
     if (keys.escape === 1) {
+      if (modalActive) {
+        setModalActive(false);
+        setSubNavIndex(0);
+        return;
+      }
+
       setModalActive(false);
     }
   }, [keys]);
@@ -221,17 +247,51 @@ const Home: NextPage<IPageProps> = ({}) => {
           </clipPath>
         </svg>
         <div className={styles.navContainer}>
-          {modalActive && (
-            <Frame
-              loading={false}
-              header={['connect', 'explore'][selectedNavItem]}
-              setIsOpen={setModalActive}
-              setCursorPointer={setCursorPointer}
-            />
-          )}
-          {!modalActive && (
-            <>
-              <div
+          <Modal
+            modalActive={modalActive}
+            setModalActive={setModalActive}
+            selectedNavIndex={selectedNavIndex}
+            subNavIndex={subNavIndex}
+            activeBlink={activeBlink}
+            setCursorPointer={setCursorPointer}
+            setSelectedNavIndex={setSelectedNavIndex}
+            subNavItems={subNavItems}
+            navItems={navItems}
+          />
+          {!modalActive &&
+            navItems.map((item: string, index: number) => {
+              return (
+                <>
+                  <div
+                    style={{ display: 'flex', width: `100px`, padding: 10 }}
+                    onMouseEnter={() => {
+                      setCursorPointer(true);
+                    }}
+                    onMouseLeave={() => {
+                      setCursorPointer(false);
+                    }}
+                    onClick={() => {
+                      setSelectedNavIndex(index);
+                      setModalActive(true);
+                      setCursorPointer(false);
+                    }}
+                  >
+                    {selectedNavIndex === index && (
+                      <div
+                        className={styles.navItem}
+                        style={{ marginRight: 6, marginLeft: -14 }}
+                      >
+                        {`>`}
+                      </div>
+                    )}
+                    <div className={styles.navItem}>{item}</div>
+                    {selectedNavIndex === index && (
+                      <div className={styles.navItem}>
+                        {activeBlink ? '_' : ''}
+                      </div>
+                    )}
+                  </div>
+                  {/* <div
                 style={{ display: 'flex', width: `100px`, padding: 10 }}
                 onMouseEnter={() => {
                   setCursorPointer(true);
@@ -240,12 +300,12 @@ const Home: NextPage<IPageProps> = ({}) => {
                   setCursorPointer(false);
                 }}
                 onClick={() => {
-                  setSelectedNavItem(0);
+                  setSelectedNavIndex(1);
                   setModalActive(true);
                   setCursorPointer(false);
                 }}
               >
-                {selectedNavItem === 0 && (
+                {selectedNavIndex === 1 && (
                   <div
                     className={styles.navItem}
                     style={{ marginRight: 6, marginLeft: -14 }}
@@ -253,38 +313,14 @@ const Home: NextPage<IPageProps> = ({}) => {
                     {`>`}
                   </div>
                 )}
-                <div className={styles.navItem}>{`connect`}</div>
-                {selectedNavItem === 0 && (
+                <div className={styles.navItem}>{navItems[1]}</div>
+                {selectedNavIndex === 1 && (
                   <div className={styles.navItem}>{activeBlink ? '_' : ''}</div>
                 )}
-              </div>
-              <div
-                style={{ display: 'flex', width: `100px`, padding: 10 }}
-                onMouseEnter={() => {
-                  setCursorPointer(true);
-                }}
-                onMouseLeave={() => {
-                  setCursorPointer(false);
-                }}
-                onClick={() => {
-                  setSelectedNavItem(1);
-                  setModalActive(true);
-                  setCursorPointer(false);
-                }}
-              >
-                {selectedNavItem === 1 && (
-                  <div
-                    className={styles.navItem}
-                    style={{ marginRight: 6, marginLeft: -14 }}
-                  >{`>`}</div>
-                )}
-                <div className={styles.navItem}>{`explore`}</div>
-                {selectedNavItem === 1 && (
-                  <div className={styles.navItem}>{activeBlink ? '_' : ''}</div>
-                )}
-              </div>
-            </>
-          )}
+              </div> */}
+                </>
+              );
+            })}
         </div>
 
         {!isMobile && (
