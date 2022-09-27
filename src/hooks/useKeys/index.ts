@@ -6,9 +6,11 @@ export interface IKeys {
   down: number;
   left: number;
   right: number;
+  escape: number;
 }
 const useKeys = () => {
   const [keys, setKeys] = useState<IKeys>({
+    escape: 0,
     enter: 0,
     up: 0,
     down: 0,
@@ -19,17 +21,31 @@ const useKeys = () => {
   useEffect(() => {
     const update = (e: KeyboardEvent) => {
       switch (e.key) {
+        case 'Escape': {
+          setKeys({
+            escape: 1,
+            enter: 0,
+            up: 0,
+            down: 0,
+            left: 0,
+            right: 0,
+          });
+          break;
+        }
         case 'Enter': {
           setKeys({
+            escape: 0,
             enter: 1,
             up: 0,
             down: 0,
             left: 0,
             right: 0,
           });
+          break;
         }
         case 'ArrowUp': {
           setKeys({
+            escape: 0,
             enter: 0,
             up: 1,
             down: 0,
@@ -40,6 +56,7 @@ const useKeys = () => {
         }
         case 'ArrowDown': {
           setKeys({
+            escape: 0,
             enter: 0,
             up: 0,
             down: 1,
@@ -50,6 +67,7 @@ const useKeys = () => {
         }
         case 'ArrowRight': {
           setKeys({
+            escape: 0,
             enter: 0,
             up: 0,
             down: 0,
@@ -60,6 +78,7 @@ const useKeys = () => {
         }
         case 'ArrowLeft': {
           setKeys({
+            escape: 0,
             enter: 0,
             up: 0,
             down: 0,

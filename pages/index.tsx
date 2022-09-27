@@ -108,13 +108,31 @@ const Home: NextPage<IPageProps> = ({}) => {
   }, [stateInc]);
 
   useEffect(() => {
-    if (keys.up === 1 && selectedNavItem > 0) {
-      setSelectedNavItem(0);
+    if (keys.up === 1) {
+      if (selectedNavItem > 0) {
+        setSelectedNavItem(0);
+      } else {
+        setSelectedNavItem(1);
+      }
       return;
     }
-    if (keys.down === 1 && selectedNavItem < 1) {
-      setSelectedNavItem(1);
+    if (keys.down === 1) {
+      if (selectedNavItem < 1) {
+        setSelectedNavItem(1);
+      } else {
+        setSelectedNavItem(0);
+      }
       return;
+    }
+    if (keys.enter === 1) {
+      if (modalActive) {
+        return;
+      }
+      setModalActive(true);
+      return;
+    }
+    if (keys.escape === 1) {
+      setModalActive(false);
     }
   }, [keys]);
 

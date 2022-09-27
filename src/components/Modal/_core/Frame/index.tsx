@@ -57,7 +57,6 @@ const Frame: React.FC<Props> = ({
           onMouseEnter={() => setCursorPointer(true)}
           onMouseLeave={() => setCursorPointer(false)}
           onClick={() => {
-            console.log(`close`);
             setIsOpen(false);
             setCursorPointer(false);
           }}
