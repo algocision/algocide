@@ -1,0 +1,78 @@
+.container {
+  border-radius: 10px;
+  border: 1px solid var(--accent);
+}
+
+.header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  /* background-color: var(--secondary); */
+  height: 30px;
+  width: 100%;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  gap: 5px;
+  /* border-bottom: 1px solid var(--secondary); */
+}
+
+.closeButton {
+  /* background-color: red; */
+  border: 1px solid var(--secondary-text);
+  border-radius: 100%;
+  width: 12px;
+  height: 12px;
+}
+/* .closeButton:after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  content: '\274c';
+  font-size: 50px;
+  color: #fff;
+  line-height: 100px;
+  text-align: center;
+} */
+
+.minimizeButton {
+  border: 1px solid var(--secondary-text);
+  border-radius: 100%;
+  width: 12px;
+  height: 12px;
+}
+
+.fullScreenButton {
+  border: 1px solid var(--secondary-text);
+  border-radius: 100%;
+  width: 12px;
+  height: 12px;
+}
+
+.title {
+  position: absolute;
+  text-align: center;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--primary-text);
+  font-family: 'UbuntuMono';
+  font-size: 13px;
+}
+
+.contentContainer {
+  width: 100%;
+  height: calc(100% - 25px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.addButton {
+  width: 100px;
+  height: 20px;
+  border: 1px solid black;
+  cursor: pointer;
+}

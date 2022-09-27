@@ -24,7 +24,7 @@
 }
 
 .cursorDot {
-  position: absolute;
+  position: fixed;
   z-index: 99999999;
   background-color: #64d86b;
   border-radius: 50%;
@@ -33,21 +33,29 @@
   pointer-events: none;
 }
 
+.cursorFollow {
+  position: fixed;
+  pointer-events: none;
+}
+
 .cursorFollowHover {
+  position: fixed;
   animation-name: cursorPointer;
   animation-duration: 0.5s;
   animation-fill-mode: forwards;
+  pointer-events: none;
 }
 
 .navContainer {
   position: absolute;
   width: 100%;
-  top: 50%;
+  top: 400px;
   display: flex;
   flex-direction: column;
   gap: 20px;
   align-items: center;
   justify-content: center;
+  z-index: 10;
 }
 
 .navItem {

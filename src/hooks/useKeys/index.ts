@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 
 export interface IKeys {
+  enter: number;
   up: number;
   down: number;
   left: number;
   right: number;
 }
-const useArrowKeys = () => {
+const useKeys = () => {
   const [keys, setKeys] = useState<IKeys>({
+    enter: 0,
     up: 0,
     down: 0,
     left: 0,
@@ -17,8 +19,18 @@ const useArrowKeys = () => {
   useEffect(() => {
     const update = (e: KeyboardEvent) => {
       switch (e.key) {
+        case 'Enter': {
+          setKeys({
+            enter: 1,
+            up: 0,
+            down: 0,
+            left: 0,
+            right: 0,
+          });
+        }
         case 'ArrowUp': {
           setKeys({
+            enter: 0,
             up: 1,
             down: 0,
             left: 0,
@@ -28,6 +40,7 @@ const useArrowKeys = () => {
         }
         case 'ArrowDown': {
           setKeys({
+            enter: 0,
             up: 0,
             down: 1,
             left: 0,
@@ -37,6 +50,7 @@ const useArrowKeys = () => {
         }
         case 'ArrowRight': {
           setKeys({
+            enter: 0,
             up: 0,
             down: 0,
             left: 0,
@@ -46,6 +60,7 @@ const useArrowKeys = () => {
         }
         case 'ArrowLeft': {
           setKeys({
+            enter: 0,
             up: 0,
             down: 0,
             left: 1,
@@ -69,4 +84,4 @@ const useArrowKeys = () => {
   };
 };
 
-export default useArrowKeys;
+export default useKeys;

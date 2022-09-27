@@ -1,6 +1,6 @@
 import useCursor from '@/src/hooks/useCursor';
 import useWindow from '@/src/hooks/useWindow';
-import useArrowKeys from '@/src/hooks/useArrowKeys';
+import useKeys from '@/src/hooks/useKeys';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import { useEffect, useRef, useState } from 'react';
@@ -8,6 +8,7 @@ import styles from '../src/styles/pages/index.module.css';
 import { IPageProps } from './_app';
 import useClick from '@/src/hooks/useClick';
 import { isMobile } from 'react-device-detect';
+import Frame from '@/src/components/Modal/_core/Frame';
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
@@ -56,6 +57,7 @@ const animate = (ref: React.MutableRefObject<any>) => {
 
 const Home: NextPage<IPageProps> = ({}) => {
   const [cursorPointer, setCursorPointer] = useState<boolean>(false);
+  const [modalActive, setModalActive] = useState<boolean>(false);
   const [stateInc, setStateInc] = useState<number>(0);
   const [activeBlink, setActiveBlink] = useState<boolean>(false);
   const [selectedNavItem, setSelectedNavItem] = useState<0 | 1>(0);
@@ -72,7 +74,7 @@ const Home: NextPage<IPageProps> = ({}) => {
 
   const { windowWidth, windowHeight } = useWindow();
   const { cursorX, cursorY } = useCursor();
-  const { keys } = useArrowKeys();
+  const { keys } = useKeys();
   const { clickActive } = useClick();
 
   useEffect(() => {
@@ -169,12 +171,6 @@ const Home: NextPage<IPageProps> = ({}) => {
               strokeWidth="2px"
               strokeLinecap="butt"
               strokeLinejoin="miter"
-              style={{ transition: ' 0.02s linear' }}
-              // points={`${cursorX - 30},${cursorY - 30}, ${cursorX + 30},${
-              //   cursorY - 30
-              // }, ${cursorX + 30},${cursorY + 30}, ${cursorX - 30},${
-              //   cursorY + 30
-              // }`}
             />
           )}
           <clipPath id="clip-path">
@@ -187,7 +183,7 @@ const Home: NextPage<IPageProps> = ({}) => {
                 cy={cursorY}
                 // r={clickActive ? '1px' : '15px'}
                 r="15px"
-                style={{ transition: ' 0.02s linear' }}
+                // style={{ transition: ' 0.02s linear' }}
                 // points={`${cursorX - 30},${cursorY - 30}, ${cursorX + 30},${
                 //   cursorY - 30
                 // }, ${cursorX + 30},${cursorY + 30}, ${cursorX - 30},${
@@ -206,6 +202,72 @@ const Home: NextPage<IPageProps> = ({}) => {
             </text>
           </clipPath>
         </svg>
+        <div className={styles.navContainer}>
+          {modalActive && (
+            <Frame
+              loading={false}
+              header={['connect', 'explore'][selectedNavItem]}
+              setIsOpen={setModalActive}
+              setCursorPointer={setCursorPointer}
+            />
+          )}
+          {!modalActive && (
+            <>
+              <div
+                style={{ display: 'flex', width: `100px`, padding: 10 }}
+                onMouseEnter={() => {
+                  setCursorPointer(true);
+                }}
+                onMouseLeave={() => {
+                  setCursorPointer(false);
+                }}
+                onClick={() => {
+                  setSelectedNavItem(0);
+                  setModalActive(true);
+                  setCursorPointer(false);
+                }}
+              >
+                {selectedNavItem === 0 && (
+                  <div
+                    className={styles.navItem}
+                    style={{ marginRight: 6, marginLeft: -14 }}
+                  >
+                    {`>`}
+                  </div>
+                )}
+                <div className={styles.navItem}>{`connect`}</div>
+                {selectedNavItem === 0 && (
+                  <div className={styles.navItem}>{activeBlink ? '_' : ''}</div>
+                )}
+              </div>
+              <div
+                style={{ display: 'flex', width: `100px`, padding: 10 }}
+                onMouseEnter={() => {
+                  setCursorPointer(true);
+                }}
+                onMouseLeave={() => {
+                  setCursorPointer(false);
+                }}
+                onClick={() => {
+                  setSelectedNavItem(1);
+                  setModalActive(true);
+                  setCursorPointer(false);
+                }}
+              >
+                {selectedNavItem === 1 && (
+                  <div
+                    className={styles.navItem}
+                    style={{ marginRight: 6, marginLeft: -14 }}
+                  >{`>`}</div>
+                )}
+                <div className={styles.navItem}>{`explore`}</div>
+                {selectedNavItem === 1 && (
+                  <div className={styles.navItem}>{activeBlink ? '_' : ''}</div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
 
         {!isMobile && (
           <div
@@ -217,64 +279,14 @@ const Home: NextPage<IPageProps> = ({}) => {
             }}
           />
         )}
-        <canvas
-          width={windowWidth}
-          height={windowHeight}
-          ref={canvasRef}
-          className={styles.matrix}
-        />
-
-        <div className={styles.navContainer}>
-          <div
-            style={{ display: 'flex', width: `100px`, padding: 10 }}
-            onMouseEnter={() => {
-              setCursorPointer(true);
-            }}
-            onMouseLeave={() => {
-              setCursorPointer(false);
-            }}
-            onClick={() => {
-              setSelectedNavItem(0);
-            }}
-          >
-            {selectedNavItem === 0 && (
-              <div
-                className={styles.navItem}
-                style={{ marginRight: 6, marginLeft: -14 }}
-              >
-                {`>`}
-              </div>
-            )}
-            <div className={styles.navItem}>{`connect`}</div>
-            {selectedNavItem === 0 && (
-              <div className={styles.navItem}>{activeBlink ? '_' : ''}</div>
-            )}
-          </div>
-          <div
-            style={{ display: 'flex', width: `100px`, padding: 10 }}
-            onMouseEnter={() => {
-              setCursorPointer(true);
-            }}
-            onMouseLeave={() => {
-              setCursorPointer(false);
-            }}
-            onClick={() => {
-              setSelectedNavItem(1);
-            }}
-          >
-            {selectedNavItem === 1 && (
-              <div
-                className={styles.navItem}
-                style={{ marginRight: 6, marginLeft: -14 }}
-              >{`>`}</div>
-            )}
-            <div className={styles.navItem}>{`explore`}</div>
-            {selectedNavItem === 1 && (
-              <div className={styles.navItem}>{activeBlink ? '_' : ''}</div>
-            )}
-          </div>
-        </div>
       </div>
+
+      <canvas
+        width={windowWidth}
+        height={windowHeight}
+        ref={canvasRef}
+        className={styles.matrix}
+      />
     </>
   );
 };
