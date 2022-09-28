@@ -255,6 +255,7 @@ const Home: NextPage<IPageProps> = ({}) => {
             activeBlink={activeBlink}
             setCursorPointer={setCursorPointer}
             setSelectedNavIndex={setSelectedNavIndex}
+            setSubNavIndex={setSubNavIndex}
             subNavItems={subNavItems}
             navItems={navItems}
           />
@@ -263,6 +264,7 @@ const Home: NextPage<IPageProps> = ({}) => {
               return (
                 <>
                   <div
+                    key={item}
                     style={{ display: 'flex', width: `100px`, padding: 10 }}
                     onMouseEnter={() => {
                       setCursorPointer(true);

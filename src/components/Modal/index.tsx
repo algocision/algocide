@@ -6,6 +6,7 @@ interface Props {
   setModalActive: React.Dispatch<React.SetStateAction<boolean>>;
   setCursorPointer: React.Dispatch<React.SetStateAction<boolean>>;
   setSelectedNavIndex: React.Dispatch<React.SetStateAction<number>>;
+  setSubNavIndex: React.Dispatch<React.SetStateAction<number>>;
   selectedNavIndex: number;
   subNavIndex: number;
   activeBlink: boolean;
@@ -18,6 +19,7 @@ export const Modal: React.FC<Props> = ({
   setCursorPointer,
   setSelectedNavIndex,
   selectedNavIndex,
+  setSubNavIndex,
   subNavIndex,
   activeBlink,
   subNavItems,
@@ -39,12 +41,13 @@ export const Modal: React.FC<Props> = ({
                     return (
                       <>
                         <div
+                          key={item}
                           style={{ display: 'flex', flexDirection: 'column' }}
                         >
                           <div
                             style={{
                               display: 'flex',
-                              width: `100px`,
+                              width: `150px`,
                               padding: 10,
                             }}
                             onMouseEnter={() => {
@@ -54,7 +57,7 @@ export const Modal: React.FC<Props> = ({
                               setCursorPointer(false);
                             }}
                             onClick={() => {
-                              setSelectedNavIndex(0);
+                              setSubNavIndex(index);
                               setModalActive(true);
                               setCursorPointer(false);
                             }}
