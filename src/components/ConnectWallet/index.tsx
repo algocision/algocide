@@ -1,8 +1,3 @@
-import CoinbaseWalletCard from './connectorCards/CoinbaseWalletCard';
-import GnosisSafeCard from './connectorCards/GnosisSafeCard';
-import MetaMaskCard from './connectorCards/MetaMaskCard';
-import NetworkCard from './connectorCards/NetworkCard';
-import WalletConnectCard from './connectorCards/WalletConnectCard';
 import { hooks as metaMaskHooks, metaMask } from './connectors/metaMask';
 import {
   coinbaseWallet,
@@ -12,12 +7,12 @@ import {
   hooks as walletConnectHooks,
   walletConnect,
 } from './connectors/walletConnect';
-import ProviderExample from './ProviderExample';
-import { useEffect, useState } from 'react';
-import { Card } from './Card';
-import { ConnectWithSelect } from './ConnectWithSelect';
+import Provider from './Provider';
+import { useState } from 'react';
+import { Connect } from './Connect';
+import { UseConnect } from './useConnect';
 
-export const ConnectWalletDev = () => {
+export const ConnectWallet = () => {
   const {
     useChainId: useChainId0,
     useAccounts: useAccounts0,
@@ -78,7 +73,7 @@ export const ConnectWalletDev = () => {
 
   return (
     <>
-      <ProviderExample />
+      <Provider />
       <div
         style={{
           display: 'flex',
@@ -87,15 +82,22 @@ export const ConnectWalletDev = () => {
           fontFamily: 'sans-serif',
         }}
       >
-        <ConnectWithSelect
+        <UseConnect
+          connector={metaMask}
+          isActivating={isActivating0}
+          isActive={isActive0}
+          error={error0}
+          setError={setError0}
+        />
+        {/* <Connect
           connector={metaMask}
           chainId={chainId0}
           isActivating={isActivating0}
           isActive={isActive0}
           error={error0}
           setError={setError0}
-        />
-        <ConnectWithSelect
+        /> */}
+        <Connect
           connector={coinbaseWallet}
           chainId={chainId1}
           isActivating={isActivating1}
@@ -103,7 +105,7 @@ export const ConnectWalletDev = () => {
           error={error1}
           setError={setError1}
         />
-        <ConnectWithSelect
+        <Connect
           connector={walletConnect}
           chainId={chainId2}
           isActivating={isActivating2}
@@ -116,4 +118,4 @@ export const ConnectWalletDev = () => {
   );
 };
 
-export default ConnectWalletDev;
+export default ConnectWallet;

@@ -65,7 +65,9 @@ const Home: NextPage<IPageProps> = ({}) => {
   const [subNavItems, setSubNavItems] = useState<Record<number, string[]>>({
     0: ['connect wallet', 'sign in', 'sign up'],
     1: ['pcparttracker', 'themeit'],
+    2: ['metamask', 'coinbase wallet', 'walletconnect'],
   });
+
   const NAV_LEN = navItems.length;
   const [selectedNavIndex, setSelectedNavIndex] = useState<number>(0);
   const SUBNAV_LEN = { 0: subNavItems[0].length, 1: subNavItems[1].length };
@@ -146,6 +148,10 @@ const Home: NextPage<IPageProps> = ({}) => {
 
     if (keys.enter === 1) {
       if (modalActive) {
+        if (selectedNavIndex === 0 && subNavIndex === 0) {
+          setSelectedNavIndex(2);
+        }
+
         return;
       }
       setModalActive(true);
@@ -153,7 +159,14 @@ const Home: NextPage<IPageProps> = ({}) => {
     }
     if (keys.escape === 1) {
       if (modalActive) {
+        // If on wallet connection options, return to previous
+        if (selectedNavIndex === 2) {
+          setSelectedNavIndex(0);
+          setSubNavIndex(0);
+          return;
+        }
         setModalActive(false);
+        setSelectedNavIndex(0);
         setSubNavIndex(0);
         return;
       }

@@ -8,36 +8,7 @@ import { useCallback, useState } from 'react';
 import { CHAINS, getAddChainParameters, URLS } from './chains';
 import { getName } from './utils';
 
-function ChainSelect({
-  chainId,
-  switchChain,
-  displayDefault,
-  chainIds,
-}: {
-  chainId: number;
-  switchChain: (chainId: number) => void | undefined;
-  displayDefault: boolean;
-  chainIds: number[];
-}) {
-  return (
-    <select
-      value={chainId}
-      onChange={event => {
-        switchChain?.(Number(event.target.value));
-      }}
-      disabled={switchChain === undefined}
-    >
-      {displayDefault ? <option value={-1}>Default Chain</option> : null}
-      {chainIds.map(chainId => (
-        <option key={chainId} value={chainId}>
-          {CHAINS[chainId]?.name ?? chainId}
-        </option>
-      ))}
-    </select>
-  );
-}
-
-export function ConnectWithSelect({
+export function Connect({
   connector,
   chainId,
   isActivating,
@@ -126,29 +97,13 @@ export function ConnectWithSelect({
   if (error) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {/* {!(connector instanceof GnosisSafe) && (
-          <ChainSelect
-            chainId={desiredChainId}
-            switchChain={switchChain}
-            displayDefault={displayDefault}
-            chainIds={chainIds}
-          />
-        )} */}
         <div style={{ marginBottom: '1rem' }} />
-        <button onClick={onClick}>Try Again?</button>
+        <button onClick={onClick}>{getName(connector).toLowerCase()}</button>
       </div>
     );
   } else if (isActive) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {/* {!(connector instanceof GnosisSafe) && (
-          <ChainSelect
-            chainId={desiredChainId === -1 ? -1 : chainId}
-            switchChain={switchChain}
-            displayDefault={displayDefault}
-            chainIds={chainIds}
-          />
-        )} */}
         <div style={{ marginBottom: '1rem' }} />
         <button
           onClick={() => {
