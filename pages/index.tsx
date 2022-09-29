@@ -262,65 +262,36 @@ const Home: NextPage<IPageProps> = ({}) => {
           {!modalActive &&
             navItems.map((item: string, index: number) => {
               return (
-                <>
-                  <div
-                    key={item}
-                    style={{ display: 'flex', width: `100px`, padding: 10 }}
-                    onMouseEnter={() => {
-                      setCursorPointer(true);
-                    }}
-                    onMouseLeave={() => {
-                      setCursorPointer(false);
-                    }}
-                    onClick={() => {
-                      setSelectedNavIndex(index);
-                      setModalActive(true);
-                      setCursorPointer(false);
-                    }}
-                  >
-                    {selectedNavIndex === index && (
-                      <div
-                        className={styles.navItem}
-                        style={{ marginRight: 6, marginLeft: -14 }}
-                      >
-                        {`>`}
-                      </div>
-                    )}
-                    <div className={styles.navItem}>{item}</div>
-                    {selectedNavIndex === index && (
-                      <div className={styles.navItem}>
-                        {activeBlink ? '_' : ''}
-                      </div>
-                    )}
-                  </div>
-                  {/* <div
-                style={{ display: 'flex', width: `100px`, padding: 10 }}
-                onMouseEnter={() => {
-                  setCursorPointer(true);
-                }}
-                onMouseLeave={() => {
-                  setCursorPointer(false);
-                }}
-                onClick={() => {
-                  setSelectedNavIndex(1);
-                  setModalActive(true);
-                  setCursorPointer(false);
-                }}
-              >
-                {selectedNavIndex === 1 && (
-                  <div
-                    className={styles.navItem}
-                    style={{ marginRight: 6, marginLeft: -14 }}
-                  >
-                    {`>`}
-                  </div>
-                )}
-                <div className={styles.navItem}>{navItems[1]}</div>
-                {selectedNavIndex === 1 && (
-                  <div className={styles.navItem}>{activeBlink ? '_' : ''}</div>
-                )}
-              </div> */}
-                </>
+                <div
+                  key={item}
+                  style={{ display: 'flex', width: `100px`, padding: 10 }}
+                  onMouseEnter={() => {
+                    setCursorPointer(true);
+                  }}
+                  onMouseLeave={() => {
+                    setCursorPointer(false);
+                  }}
+                  onClick={() => {
+                    setSelectedNavIndex(index);
+                    setModalActive(true);
+                    setCursorPointer(false);
+                  }}
+                >
+                  {selectedNavIndex === index && (
+                    <div
+                      className={styles.navItem}
+                      style={{ marginRight: 6, marginLeft: -14 }}
+                    >
+                      {`>`}
+                    </div>
+                  )}
+                  <div className={styles.navItem}>{item}</div>
+                  {selectedNavIndex === index && (
+                    <div className={styles.navItem}>
+                      {activeBlink ? '_' : ''}
+                    </div>
+                  )}
+                </div>
               );
             })}
         </div>

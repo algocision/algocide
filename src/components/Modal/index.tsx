@@ -39,46 +39,44 @@ export const Modal: React.FC<Props> = ({
                 {subNavItems[selectedNavIndex].map(
                   (item: string, index: number) => {
                     return (
-                      <>
+                      <div
+                        key={item}
+                        style={{ display: 'flex', flexDirection: 'column' }}
+                      >
                         <div
-                          key={item}
-                          style={{ display: 'flex', flexDirection: 'column' }}
+                          style={{
+                            display: 'flex',
+                            width: `150px`,
+                            padding: 10,
+                          }}
+                          onMouseEnter={() => {
+                            setCursorPointer(true);
+                          }}
+                          onMouseLeave={() => {
+                            setCursorPointer(false);
+                          }}
+                          onClick={() => {
+                            setSubNavIndex(index);
+                            setModalActive(true);
+                            setCursorPointer(false);
+                          }}
                         >
-                          <div
-                            style={{
-                              display: 'flex',
-                              width: `150px`,
-                              padding: 10,
-                            }}
-                            onMouseEnter={() => {
-                              setCursorPointer(true);
-                            }}
-                            onMouseLeave={() => {
-                              setCursorPointer(false);
-                            }}
-                            onClick={() => {
-                              setSubNavIndex(index);
-                              setModalActive(true);
-                              setCursorPointer(false);
-                            }}
-                          >
-                            {subNavIndex === index && (
-                              <div
-                                className={styles.navItem}
-                                style={{ marginRight: 6, marginLeft: -14 }}
-                              >
-                                {`>`}
-                              </div>
-                            )}
-                            <div className={styles.navItem}>{item}</div>
-                            {subNavIndex === index && (
-                              <div className={styles.navItem}>
-                                {activeBlink ? '_' : ''}
-                              </div>
-                            )}
-                          </div>
+                          {subNavIndex === index && (
+                            <div
+                              className={styles.navItem}
+                              style={{ marginRight: 6, marginLeft: -14 }}
+                            >
+                              {`>`}
+                            </div>
+                          )}
+                          <div className={styles.navItem}>{item}</div>
+                          {subNavIndex === index && (
+                            <div className={styles.navItem}>
+                              {activeBlink ? '_' : ''}
+                            </div>
+                          )}
                         </div>
-                      </>
+                      </div>
                     );
                   }
                 )}
