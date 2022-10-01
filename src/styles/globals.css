@@ -73,3 +73,7 @@ a {
 ::-webkit-scrollbar-track {
   background-color: transparent;
 }
+
+#walletconnect-qrcode-modal {
+  cursor: auto;
+}

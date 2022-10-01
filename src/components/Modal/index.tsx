@@ -15,36 +15,36 @@ import {
   walletConnect,
 } from '../ConnectWallet/connectors/walletConnect';
 import { useConnectWallet } from '../ConnectWallet/useConnectWallet';
+import { MENU, MenuId, MenuOpt } from '@/src/util/menuTraverse';
 
 interface Props {
   modalActive: boolean;
   setModalActive: React.Dispatch<React.SetStateAction<boolean>>;
-  setCursorPointer: React.Dispatch<React.SetStateAction<boolean>>;
-  setSelectedNavIndex: React.Dispatch<React.SetStateAction<number>>;
-  setSubNavIndex: React.Dispatch<React.SetStateAction<number>>;
+  menuId: MenuId;
+  setMenuId: React.Dispatch<React.SetStateAction<MenuId>>;
   selectedNavIndex: number;
-  subNavIndex: number;
+  setSelectedNavIndex: React.Dispatch<React.SetStateAction<number>>;
   activeBlink: boolean;
-  subNavItems: Record<number, string[]>;
-  navItems: string[];
+  setCursorPointer: React.Dispatch<React.SetStateAction<boolean>>;
+  engageItem: (el: MenuOpt) => boolean;
 }
+
 export const Modal: React.FC<Props> = ({
   modalActive,
   setModalActive,
+  activeBlink,
   setCursorPointer,
+  menuId,
+  setMenuId,
   setSelectedNavIndex,
   selectedNavIndex,
-  setSubNavIndex,
-  subNavIndex,
-  activeBlink,
-  subNavItems,
-  navItems,
+  engageItem,
 }) => {
   // Reset indices on close
   useEffect(() => {
     if (!modalActive) {
+      setMenuId('-1');
       setSelectedNavIndex(0);
-      setSubNavIndex(0);
     }
   }, [modalActive]);
 
@@ -57,115 +57,165 @@ export const Modal: React.FC<Props> = ({
     error: error0,
   } = useConnectWallet('metamask');
 
+  const {
+    connect: connect1,
+    disconnect: disconnect1,
+    accounts: accounts1,
+    isActivating: isActivating1,
+    isActive: isActive1,
+    error: error1,
+  } = useConnectWallet('coinbase wallet');
+
+  const {
+    connect: connect2,
+    disconnect: disconnect2,
+    accounts: accounts2,
+    isActivating: isActivating2,
+    isActive: isActive2,
+    error: error2,
+  } = useConnectWallet('walletconnect');
+
+  const shortenAddress = (address: string) => {
+    return `${address.slice(0, 5)}...${address.slice(
+      address.length - 5,
+      address.length
+    )}`;
+  };
+
+  const getMenuText = (item: MenuOpt) => {
+    if (
+      item !== 'metamask' &&
+      item !== 'coinbase wallet' &&
+      item !== 'walletconnect'
+    ) {
+      return item;
+    }
+
+    if (item === 'metamask') {
+      if (isActive0) {
+        return accounts0 && shortenAddress(accounts0[0]);
+      }
+      return 'metamask';
+    }
+    if (item === 'coinbase wallet') {
+      if (isActive1) {
+        return accounts1 && shortenAddress(accounts1[0]);
+      }
+      return 'coinbase wallet';
+    }
+    if (item === 'walletconnect') {
+      if (isActive2) {
+        return accounts2 && shortenAddress(accounts2[0]);
+      }
+      return 'walletconnect';
+    }
+  };
+
   return (
     <>
       {modalActive && (
         <Frame
           loading={false}
-          header={navItems[selectedNavIndex]}
+          header={menuId[0] === '0' ? 'connect' : 'explore'}
           setIsOpen={setModalActive}
           setCursorPointer={setCursorPointer}
           content={
             <>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                {subNavItems[selectedNavIndex].map(
-                  (item: string, index: number) => {
-                    return item === 'metamask' ||
-                      item === 'coinbase wallet' ||
-                      item === 'walletconnect' ? (
+                {MENU[menuId].map((item: MenuOpt, index: number) => {
+                  return item === 'metamask' ||
+                    item === 'coinbase wallet' ||
+                    item === 'walletconnect' ? (
+                    <div
+                      key={item}
+                      style={{ display: 'flex', flexDirection: 'column' }}
+                    >
                       <div
-                        key={item}
-                        style={{ display: 'flex', flexDirection: 'column' }}
+                        style={{
+                          display: 'flex',
+                          width: `150px`,
+                          padding: 10,
+                        }}
+                        onMouseEnter={() => {
+                          setCursorPointer(true);
+                        }}
+                        onMouseLeave={() => {
+                          setCursorPointer(false);
+                        }}
+                        onClick={() => {
+                          if (!engageItem(item)) {
+                            setSelectedNavIndex(index);
+                            setCursorPointer(false);
+                          } else {
+                            setSelectedNavIndex(0);
+                          }
+                        }}
                       >
-                        <div
-                          style={{
-                            display: 'flex',
-                            width: `150px`,
-                            padding: 10,
-                          }}
-                          onMouseEnter={() => {
-                            setCursorPointer(true);
-                          }}
-                          onMouseLeave={() => {
-                            setCursorPointer(false);
-                          }}
-                          onClick={() => {
-                            setSubNavIndex(index);
-                            setCursorPointer(false);
-                          }}
-                        >
-                          {subNavIndex === index && (
-                            <div
-                              className={styles.navItem}
-                              style={{ marginRight: 6, marginLeft: -14 }}
-                            >
-                              {`>`}
-                            </div>
-                          )}
+                        {selectedNavIndex === index && (
                           <div
                             className={styles.navItem}
-                            onClick={() => {
-                              if (item === 'metamask') {
-                                isActive0 ? disconnect0() : connect0();
-                              }
-                            }}
+                            style={{ marginRight: 6, marginLeft: -14 }}
                           >
-                            {isActive0 ? accounts0 : item}
+                            {`>`}
                           </div>
-                          {subNavIndex === index && (
-                            <div className={styles.navItem}>
-                              {activeBlink ? '_' : ''}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ) : (
-                      <div
-                        key={item}
-                        style={{ display: 'flex', flexDirection: 'column' }}
-                      >
+                        )}
                         <div
-                          style={{
-                            display: 'flex',
-                            width: `150px`,
-                            padding: 10,
-                          }}
-                          onMouseEnter={() => {
-                            setCursorPointer(true);
-                          }}
-                          onMouseLeave={() => {
-                            setCursorPointer(false);
-                          }}
+                          className={styles.navItem}
                           onClick={() => {
-                            if (item === 'connect wallet') {
-                              setSubNavIndex(0);
-                              setSelectedNavIndex(2);
-                              setCursorPointer(false);
-                              return;
-                            }
-                            setSubNavIndex(index);
-                            setCursorPointer(false);
+                            engageItem(item);
                           }}
                         >
-                          {subNavIndex === index && (
-                            <div
-                              className={styles.navItem}
-                              style={{ marginRight: 6, marginLeft: -14 }}
-                            >
-                              {`>`}
-                            </div>
-                          )}
-                          <div className={styles.navItem}>{item}</div>
-                          {subNavIndex === index && (
-                            <div className={styles.navItem}>
-                              {activeBlink ? '_' : ''}
-                            </div>
-                          )}
+                          {getMenuText(item)}
                         </div>
+                        {selectedNavIndex === index && (
+                          <div className={styles.navItem}>
+                            {activeBlink ? '_' : ''}
+                          </div>
+                        )}
                       </div>
-                    );
-                  }
-                )}
+                    </div>
+                  ) : (
+                    <div
+                      key={item}
+                      style={{ display: 'flex', flexDirection: 'column' }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          width: `150px`,
+                          padding: 10,
+                        }}
+                        onMouseEnter={() => {
+                          setCursorPointer(true);
+                        }}
+                        onMouseLeave={() => {
+                          setCursorPointer(false);
+                        }}
+                        onClick={() => {
+                          if (!engageItem(item)) {
+                            setSelectedNavIndex(index);
+                            setCursorPointer(false);
+                          }
+                        }}
+                      >
+                        {selectedNavIndex === index && (
+                          <div
+                            className={styles.navItem}
+                            style={{ marginRight: 6, marginLeft: -14 }}
+                          >
+                            {`>`}
+                          </div>
+                        )}
+                        <div className={styles.navItem}>{item}</div>
+                        {selectedNavIndex === index && (
+                          <div className={styles.navItem}>
+                            {activeBlink ? '_' : ''}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </>
           }

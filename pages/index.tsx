@@ -9,7 +9,16 @@ import { IPageProps } from './_app';
 import useClick from '@/src/hooks/useClick';
 import { isMobile } from 'react-device-detect';
 import Frame from '@/src/components/Modal/_core/Frame';
-import Modal from '@/src/components/Modal';
+import {
+  back,
+  get_opt_from_index,
+  MENU,
+  MenuId,
+  MenuOpt,
+  next,
+} from '@/src/util/menuTraverse';
+import { Modal } from '@/src/components/Modal';
+import { useConnectWallet } from '@/src/components/ConnectWallet/useConnectWallet';
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
@@ -57,21 +66,40 @@ const animate = (ref: React.MutableRefObject<any>) => {
 };
 
 const Home: NextPage<IPageProps> = ({}) => {
+  const {
+    connect: connect0,
+    disconnect: disconnect0,
+    accounts: accounts0,
+    isActivating: isActivating0,
+    isActive: isActive0,
+    error: error0,
+  } = useConnectWallet('metamask');
+
+  const {
+    connect: connect1,
+    disconnect: disconnect1,
+    accounts: accounts1,
+    isActivating: isActivating1,
+    isActive: isActive1,
+    error: error1,
+  } = useConnectWallet('coinbase wallet');
+
+  const {
+    connect: connect2,
+    disconnect: disconnect2,
+    accounts: accounts2,
+    isActivating: isActivating2,
+    isActive: isActive2,
+    error: error2,
+  } = useConnectWallet('walletconnect');
+
   const [cursorPointer, setCursorPointer] = useState<boolean>(false);
   const [modalActive, setModalActive] = useState<boolean>(false);
   const [stateInc, setStateInc] = useState<number>(0);
   const [activeBlink, setActiveBlink] = useState<boolean>(false);
-  const [navItems, setNavItems] = useState<string[]>(['connect', 'explore']);
-  const [subNavItems, setSubNavItems] = useState<Record<number, string[]>>({
-    0: ['connect wallet', 'sign in', 'sign up'],
-    1: ['pcparttracker', 'themeit'],
-    2: ['metamask', 'coinbase wallet', 'walletconnect'],
-  });
+  const [menuId, setMenuId] = useState<MenuId>('-1');
 
-  const NAV_LEN = navItems.length;
-  const [selectedNavIndex, setSelectedNavIndex] = useState<number>(0);
-  const SUBNAV_LEN = { 0: subNavItems[0].length, 1: subNavItems[1].length };
-  const [subNavIndex, setSubNavIndex] = useState<number>(0);
+  const [menuIndex, setMenuIndex] = useState<number>(0);
 
   const canvasRef = useRef<any>();
   const textRef1 = useRef<any>();
@@ -120,60 +148,72 @@ const Home: NextPage<IPageProps> = ({}) => {
 
   useEffect(() => {
     if (keys.up === 1) {
-      if (!modalActive) {
-        if (selectedNavIndex === 0) {
-          setSelectedNavIndex(NAV_LEN - 1);
-        } else {
-          setSelectedNavIndex(p => p - 1);
-        }
-        return;
-      }
-      setSubNavIndex(p =>
-        p === 0 ? (SUBNAV_LEN as any)[selectedNavIndex] - 1 : p - 1
-      );
+      setMenuIndex(p => (p === 0 ? MENU[menuId].length - 1 : p - 1));
+      return;
     }
     if (keys.down === 1) {
-      if (!modalActive) {
-        if (selectedNavIndex === NAV_LEN - 1) {
-          setSelectedNavIndex(0);
-        } else {
-          setSelectedNavIndex(p => p + 1);
-        }
-        return;
-      }
-      setSubNavIndex(p =>
-        p === (SUBNAV_LEN as any)[selectedNavIndex] - 1 ? 0 : p + 1
-      );
+      setMenuIndex(p => (p === MENU[menuId].length - 1 ? 0 : p + 1));
+      return;
     }
 
     if (keys.enter === 1) {
-      if (modalActive) {
-        if (selectedNavIndex === 0 && subNavIndex === 0) {
-          setSelectedNavIndex(2);
-        }
-
+      if (menuId === '-1') {
+        setMenuIndex(0);
+        setModalActive(true);
+        setMenuId(`${menuIndex}` as MenuId);
         return;
       }
-      setModalActive(true);
+      engageItem(get_opt_from_index(menuIndex, menuId));
       return;
     }
     if (keys.escape === 1) {
-      if (modalActive) {
-        // If on wallet connection options, return to previous
-        if (selectedNavIndex === 2) {
-          setSelectedNavIndex(0);
-          setSubNavIndex(0);
-          return;
-        }
-        setModalActive(false);
-        setSelectedNavIndex(0);
-        setSubNavIndex(0);
+      if (modalActive && back(menuId) !== '-1') {
+        setMenuId(back(menuId));
         return;
       }
 
       setModalActive(false);
     }
   }, [keys]);
+
+  const engageItem = (el: MenuOpt): boolean => {
+    switch (el) {
+      case 'metamask': {
+        disconnect1();
+        disconnect2();
+        isActive0 ? disconnect0() : connect0();
+        return true;
+      }
+      case 'coinbase wallet': {
+        disconnect0();
+        disconnect2();
+        isActive1 ? disconnect1() : connect1();
+        return true;
+      }
+      case 'walletconnect': {
+        disconnect0();
+        disconnect1();
+        isActive2 ? disconnect2() : connect2();
+        return true;
+      }
+      case 'connect wallet': {
+        setMenuId('0-0');
+        setMenuIndex(0);
+        return true;
+      }
+      case 'pcparttracker': {
+        window.open('https://pcparttracker.com/', '_blank');
+        return true;
+      }
+      case 'themeit': {
+        window.open('https://theme-it-yeqggr54rq-uk.a.run.app', '_blank');
+        return true;
+      }
+      default: {
+        return false;
+      }
+    }
+  };
 
   return (
     <>
@@ -263,17 +303,16 @@ const Home: NextPage<IPageProps> = ({}) => {
           <Modal
             modalActive={modalActive}
             setModalActive={setModalActive}
-            selectedNavIndex={selectedNavIndex}
-            subNavIndex={subNavIndex}
             activeBlink={activeBlink}
             setCursorPointer={setCursorPointer}
-            setSelectedNavIndex={setSelectedNavIndex}
-            setSubNavIndex={setSubNavIndex}
-            subNavItems={subNavItems}
-            navItems={navItems}
+            menuId={menuId}
+            setMenuId={setMenuId}
+            setSelectedNavIndex={setMenuIndex}
+            selectedNavIndex={menuIndex}
+            engageItem={engageItem}
           />
           {!modalActive &&
-            navItems.map((item: string, index: number) => {
+            MENU['-1'].map((item: string, index: number) => {
               return (
                 <div
                   key={item}
@@ -285,12 +324,12 @@ const Home: NextPage<IPageProps> = ({}) => {
                     setCursorPointer(false);
                   }}
                   onClick={() => {
-                    setSelectedNavIndex(index);
+                    setMenuId(`${index}` as MenuId);
                     setModalActive(true);
                     setCursorPointer(false);
                   }}
                 >
-                  {selectedNavIndex === index && (
+                  {menuIndex === index && (
                     <div
                       className={styles.navItem}
                       style={{ marginRight: 6, marginLeft: -14 }}
@@ -299,7 +338,7 @@ const Home: NextPage<IPageProps> = ({}) => {
                     </div>
                   )}
                   <div className={styles.navItem}>{item}</div>
-                  {selectedNavIndex === index && (
+                  {menuIndex === index && (
                     <div className={styles.navItem}>
                       {activeBlink ? '_' : ''}
                     </div>
