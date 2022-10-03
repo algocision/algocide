@@ -10,6 +10,8 @@ const env = {
   GA_TAG: '',
   DATABASE_URL: process.env.DATABASE_URL,
   INFURA_ID: process.env.INFURA_ID,
+  ENCRYPTION_HEX: process.env.ENCRYPTION_HEX,
+  INIT_HEX: process.env.INIT_HEX,
 };
 
 module.exports = {

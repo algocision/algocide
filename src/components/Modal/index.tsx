@@ -16,6 +16,8 @@ import {
 } from '../ConnectWallet/connectors/walletConnect';
 import { useConnectWallet } from '../ConnectWallet/useConnectWallet';
 import { MENU, MenuId, MenuOpt } from '@/src/util/menuTraverse';
+import { walletLogin } from '@/src/util/walletLogin';
+import { useWallet } from '@/src/hooks/useWallets';
 
 interface Props {
   modalActive: boolean;
@@ -48,32 +50,7 @@ export const Modal: React.FC<Props> = ({
     }
   }, [modalActive]);
 
-  const {
-    connect: connect0,
-    disconnect: disconnect0,
-    accounts: accounts0,
-    isActivating: isActivating0,
-    isActive: isActive0,
-    error: error0,
-  } = useConnectWallet('metamask');
-
-  const {
-    connect: connect1,
-    disconnect: disconnect1,
-    accounts: accounts1,
-    isActivating: isActivating1,
-    isActive: isActive1,
-    error: error1,
-  } = useConnectWallet('coinbase wallet');
-
-  const {
-    connect: connect2,
-    disconnect: disconnect2,
-    accounts: accounts2,
-    isActivating: isActivating2,
-    isActive: isActive2,
-    error: error2,
-  } = useConnectWallet('walletconnect');
+  const { connectedAddress, activeWallet } = useWallet();
 
   const shortenAddress = (address: string) => {
     return `${address.slice(0, 5)}...${address.slice(
@@ -92,24 +69,30 @@ export const Modal: React.FC<Props> = ({
     }
 
     if (item === 'metamask') {
-      if (isActive0) {
-        return accounts0 && shortenAddress(accounts0[0]);
+      if (activeWallet === 'metamask') {
+        return connectedAddress && shortenAddress(connectedAddress);
       }
       return 'metamask';
     }
     if (item === 'coinbase wallet') {
-      if (isActive1) {
-        return accounts1 && shortenAddress(accounts1[0]);
+      if (activeWallet === 'coinbase wallet') {
+        return connectedAddress && shortenAddress(connectedAddress);
       }
       return 'coinbase wallet';
     }
     if (item === 'walletconnect') {
-      if (isActive2) {
-        return accounts2 && shortenAddress(accounts2[0]);
+      if (activeWallet === 'walletconnect') {
+        return connectedAddress && shortenAddress(connectedAddress);
       }
       return 'walletconnect';
     }
   };
+
+  useEffect(() => {
+    if (connectedAddress) {
+      walletLogin(connectedAddress);
+    }
+  }, [connectedAddress]);
 
   return (
     <>
