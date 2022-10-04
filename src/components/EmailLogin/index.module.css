@@ -1,0 +1,12 @@
+.container {
+  width: 100%;
+  display: flex;
+  padding-left: 20px;
+  margin-top: -15px;
+  z-index: 10;
+}
+
+.text {
+  color: #64d86b;
+  font-family: 'UbuntuMono';
+}

@@ -16,6 +16,7 @@
   // 	"description": "Log output to console"
   // }
   "TSX w/ CSS Module Boilerplate": {
+    "scope": "typescriptreact, typescript, javascript, javascriptreact",
     "prefix": "tsxc",
     "body": [
       "import styles from './index.module.css';",
