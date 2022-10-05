@@ -1,20 +1,6 @@
 import Frame from './_core/Frame';
 import styles from './index.module.css';
-import { useEffect, useState } from 'react';
-import { UseConnect } from '../ConnectWallet/useConnect';
-import {
-  hooks as metaMaskHooks,
-  metaMask,
-} from '../ConnectWallet/connectors/metaMask';
-import {
-  coinbaseWallet,
-  hooks as coinbaseWalletHooks,
-} from '../ConnectWallet/connectors/coinbaseWallet';
-import {
-  hooks as walletConnectHooks,
-  walletConnect,
-} from '../ConnectWallet/connectors/walletConnect';
-import { useConnectWallet } from '../ConnectWallet/useConnectWallet';
+import { useEffect } from 'react';
 import { MENU, MenuId, MenuOpt } from '@/src/util/menuTraverse';
 import { walletLogin } from '@/src/util/walletLogin';
 import { useWallet } from '@/src/hooks/useWallets';
@@ -105,119 +91,121 @@ export const Modal: React.FC<Props> = ({
         <Frame
           loading={false}
           header={menuId[0] === '0' ? 'connect' : 'explore'}
+          open={modalActive}
           setIsOpen={setModalActive}
           setCursorPointer={setCursorPointer}
-          content={
-            <>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                {modalActive &&
-                  MENU[menuId].map((item: MenuOpt, index: number) => {
-                    return item === 'metamask' ||
-                      item === 'coinbase wallet' ||
-                      item === 'walletconnect' ? (
+        >
+          <>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {modalActive &&
+                MENU[menuId].map((item: MenuOpt, index: number) => {
+                  return item === 'metamask' ||
+                    item === 'coinbase wallet' ||
+                    item === 'walletconnect' ? (
+                    <div
+                      key={item}
+                      style={{ display: 'flex', flexDirection: 'column' }}
+                    >
                       <div
-                        key={item}
-                        style={{ display: 'flex', flexDirection: 'column' }}
-                      >
-                        <div
-                          style={{
-                            display: 'flex',
-                            width: `150px`,
-                            padding: 10,
-                          }}
-                          onMouseEnter={() => {
-                            setCursorPointer(true);
-                          }}
-                          onMouseLeave={() => {
+                        style={{
+                          display: 'flex',
+                          width: `150px`,
+                          padding: 10,
+                        }}
+                        onMouseEnter={() => {
+                          setCursorPointer(true);
+                        }}
+                        onMouseLeave={() => {
+                          setCursorPointer(false);
+                        }}
+                        onClick={() => {
+                          if (!engageItem(item)) {
+                            setSelectedNavIndex(index);
                             setCursorPointer(false);
-                          }}
-                          onClick={() => {
-                            if (!engageItem(item)) {
-                              setSelectedNavIndex(index);
-                              setCursorPointer(false);
-                            } else {
-                              setSelectedNavIndex(0);
-                            }
-                          }}
-                        >
-                          {selectedNavIndex === index && (
-                            <div
-                              className={styles.navItem}
-                              style={{ marginRight: 6, marginLeft: -14 }}
-                            >
-                              {`>`}
-                            </div>
-                          )}
+                          } else {
+                            setSelectedNavIndex(0);
+                          }
+                        }}
+                      >
+                        {selectedNavIndex === index && (
                           <div
                             className={styles.navItem}
-                            onClick={() => {
-                              engageItem(item);
-                            }}
+                            style={{ marginRight: 6, marginLeft: -14 }}
                           >
-                            {getMenuText(item)}
+                            {`>`}
                           </div>
-                          {selectedNavIndex === index && (
-                            <div className={styles.navItem}>
-                              {activeBlink ? '_' : ''}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ) : (
-                      <div
-                        key={item}
-                        style={{ display: 'flex', flexDirection: 'column' }}
-                      >
+                        )}
                         <div
-                          style={{
-                            display: 'flex',
-                            width: `150px`,
-                            padding: 10,
-                          }}
-                          onMouseEnter={() => {
-                            setCursorPointer(true);
-                          }}
-                          onMouseLeave={() => {
-                            setCursorPointer(false);
-                          }}
+                          className={styles.navItem}
                           onClick={() => {
-                            if (!engageItem(item)) {
-                              setSelectedNavIndex(index);
-                              setCursorPointer(false);
-                            }
+                            engageItem(item);
                           }}
                         >
-                          {selectedNavIndex === index && (
-                            <div
-                              className={styles.navItem}
-                              style={{ marginRight: 6, marginLeft: -14 }}
-                            >
-                              {`>`}
-                            </div>
-                          )}
-                          <div className={styles.navItem}>{item}</div>
-                          {selectedNavIndex === index && (
-                            <div className={styles.navItem}>
-                              {activeBlink ? '_' : ''}
-                            </div>
-                          )}
+                          {getMenuText(item)}
                         </div>
+                        {selectedNavIndex === index && (
+                          <div className={styles.navItem}>
+                            {activeBlink ? '_' : ''}
+                          </div>
+                        )}
                       </div>
-                    );
-                  })}
-              </div>
-            </>
-          }
-        />
+                    </div>
+                  ) : (
+                    <div
+                      key={item}
+                      style={{ display: 'flex', flexDirection: 'column' }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          width: `150px`,
+                          padding: 10,
+                        }}
+                        onMouseEnter={() => {
+                          setCursorPointer(true);
+                        }}
+                        onMouseLeave={() => {
+                          setCursorPointer(false);
+                        }}
+                        onClick={() => {
+                          if (!engageItem(item)) {
+                            setSelectedNavIndex(index);
+                            setCursorPointer(false);
+                          }
+                        }}
+                      >
+                        {selectedNavIndex === index && (
+                          <div
+                            className={styles.navItem}
+                            style={{ marginRight: 6, marginLeft: -14 }}
+                          >
+                            {`>`}
+                          </div>
+                        )}
+                        <div className={styles.navItem}>{item}</div>
+                        {selectedNavIndex === index && (
+                          <div className={styles.navItem}>
+                            {activeBlink ? '_' : ''}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </>
+        </Frame>
       )}
       {emailFlow && (
         <Frame
           loading={false}
           header={'login w/ email'}
           setIsOpen={setEmailFlow}
+          open={emailFlow}
           setCursorPointer={setCursorPointer}
-          content={<EmailLogin activeBlink={activeBlink} />}
-        />
+        >
+          <EmailLogin activeBlink={activeBlink} active={emailFlow} />
+        </Frame>
       )}
     </>
   );

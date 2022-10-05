@@ -2,23 +2,25 @@ import React, { useEffect, useState } from 'react';
 import styles from './index.module.css';
 
 interface Props {
-  content?: React.ReactNode;
+  children?: React.ReactNode;
   width?: string;
   height?: string;
   header?: string;
+  open: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setCursorPointer: React.Dispatch<React.SetStateAction<boolean>>;
   loading: boolean;
 }
 
 const Frame: React.FC<Props> = ({
-  content,
+  children,
   width,
   height,
   header,
   loading,
   setIsOpen,
   setCursorPointer,
+  open,
 }) => {
   const [title, setTitle] = useState<string>(header ? header : '');
 
@@ -39,10 +41,14 @@ const Frame: React.FC<Props> = ({
   }, [expanded, width, height]);
 
   useEffect(() => {
-    if (content && (content as any).type && (content as any).type.displayName) {
-      setTitle((content as any).type.displayName);
+    if (
+      children &&
+      (children as any).type &&
+      (children as any).type.displayName
+    ) {
+      setTitle((children as any).type.displayName);
     }
-  }, [content]);
+  }, [children]);
   return (
     <div
       className={styles.container}
@@ -60,17 +66,10 @@ const Frame: React.FC<Props> = ({
             setIsOpen(false);
             setCursorPointer(false);
           }}
-        />
-        {/* <div className={styles.minimizeButton} />
-        <div
-          className={styles.fullScreenButton}
-          // onClick={() => {
-          //   setExpanded(prevState => !prevState);
-          // }}
-        /> */}
+        /> 
         <div className={styles.title}>{title}</div>
       </div>
-      <div className={styles.contentContainer}>{content}</div>
+      <div className={styles.contentContainer}>{children}</div>
     </div>
   );
 };

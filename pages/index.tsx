@@ -19,6 +19,7 @@ import {
 } from '@/src/util/menuTraverse';
 import { Modal } from '@/src/components/Modal';
 import { useConnectWallet } from '@/src/components/ConnectWallet/useConnectWallet';
+import useActiveState from '@/src/hooks/useActiveState';
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
@@ -98,7 +99,7 @@ const Home: NextPage<IPageProps> = ({}) => {
   const [stateInc, setStateInc] = useState<number>(0);
   const [activeBlink, setActiveBlink] = useState<boolean>(false);
   const [menuId, setMenuId] = useState<MenuId>('-1');
-  const [emailFlow, setEmailFlow] = useState<boolean>(false);
+  const { emailFlowActive, setEmailFlowActive } = useActiveState();
 
   const [menuIndex, setMenuIndex] = useState<number>(0);
 
@@ -158,7 +159,7 @@ const Home: NextPage<IPageProps> = ({}) => {
     }
 
     if (keys.enter === 1) {
-      if (emailFlow) {
+      if (emailFlowActive) {
         // Block enter key from interfering with key listener in
         // @/src/components/EmailLogin/index.tsx
         return;
@@ -177,8 +178,8 @@ const Home: NextPage<IPageProps> = ({}) => {
         setMenuId(back(menuId));
         return;
       }
-      if (emailFlow && !modalActive) {
-        setEmailFlow(false);
+      if (emailFlowActive && !modalActive) {
+        setEmailFlowActive(false);
         setModalActive(true);
         setMenuIndex(0);
         setMenuId('0');
@@ -223,7 +224,7 @@ const Home: NextPage<IPageProps> = ({}) => {
         return true;
       }
       case 'login w/ email': {
-        setEmailFlow(true);
+        setEmailFlowActive(true);
         setModalActive(false);
         setCursorPointer(false);
         return true;
@@ -329,11 +330,11 @@ const Home: NextPage<IPageProps> = ({}) => {
             setSelectedNavIndex={setMenuIndex}
             selectedNavIndex={menuIndex}
             engageItem={engageItem}
-            emailFlow={emailFlow}
-            setEmailFlow={setEmailFlow}
+            emailFlow={emailFlowActive}
+            setEmailFlow={setEmailFlowActive}
           />
           {!modalActive &&
-            !emailFlow &&
+            !emailFlowActive &&
             MENU['-1'].map((item: string, index: number) => {
               return (
                 <div
