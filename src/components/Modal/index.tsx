@@ -1,10 +1,12 @@
 import Frame from './_core/Frame';
 import styles from './index.module.css';
-import { useEffect } from 'react';
+import { SetStateAction, useEffect, useRef, useState } from 'react';
 import { MENU, MenuId, MenuOpt } from '@/src/util/menuTraverse';
 import { walletLogin } from '@/src/util/walletLogin';
 import { useWallet } from '@/src/hooks/useWallets';
 import EmailLogin from '../EmailLogin';
+import isValidEmail from '@/src/util/isValidEmail';
+import { aes_decode } from '@/src/util/auth/aes';
 
 interface Props {
   modalActive: boolean;
@@ -18,6 +20,7 @@ interface Props {
   engageItem: (el: MenuOpt) => boolean;
   emailFlow: boolean;
   setEmailFlow: React.Dispatch<React.SetStateAction<boolean>>;
+  triggerLoginReset: number;
 }
 
 export const Modal: React.FC<Props> = ({
@@ -32,6 +35,7 @@ export const Modal: React.FC<Props> = ({
   engageItem,
   emailFlow,
   setEmailFlow,
+  triggerLoginReset,
 }) => {
   // Reset indices on close
   useEffect(() => {
@@ -84,6 +88,84 @@ export const Modal: React.FC<Props> = ({
       walletLogin(connectedAddress);
     }
   }, [connectedAddress]);
+
+  // Below is logic for EmailLogin
+  const inputBuffer = useRef<string>('');
+
+  const [error, setError] = useState<boolean>(false);
+  const [code, setCode] = useState<string>('-1');
+
+  const [state, setState] = useState<'0' | '1' | '2' | '3'>('0');
+
+  useEffect(() => {
+    if (code !== '-1' && !error) {
+      inputBuffer.current = '';
+      setState('1');
+    }
+  }, [code, error]);
+
+  useEffect(() => {
+    if (state === '1' && code === inputBuffer.current) {
+      inputBuffer.current = '';
+      setState('2');
+    }
+  }, [state, inputBuffer.current]);
+
+  useEffect(() => {
+    if (triggerLoginReset > 0) {
+      setError(false);
+      setCode('-1');
+      setState('0');
+      inputBuffer.current = '';
+    }
+  }, [triggerLoginReset]);
+
+  const submit = async () => {
+    if (!isValidEmail(inputBuffer.current)) {
+      return;
+    }
+    const fetch_res = await fetch(
+      `/api/verify-email?email=${inputBuffer.current}`
+    );
+    const verification_res = await fetch_res.json();
+    if (verification_res.error) {
+      setError(true);
+    } else {
+      setCode(aes_decode(verification_res.auth));
+    }
+  };
+
+  useEffect(() => {
+    const update = (e: KeyboardEvent) => {
+      if (e.key === 'Delete') {
+        inputBuffer.current = '';
+        return;
+      }
+      if (e.key === 'Enter') {
+        return;
+      }
+      const p = inputBuffer.current;
+      inputBuffer.current = `${p}${e.key}`;
+    };
+
+    const listenForDeleteOrEnter = (e: KeyboardEvent) => {
+      if (e.key === 'Backspace') {
+        const p = inputBuffer.current;
+        inputBuffer.current = `${p.slice(0, p.length - 1)}`;
+        return;
+      }
+      if (e.key === 'Enter') {
+        submit();
+        return;
+      }
+    };
+    window.addEventListener('keypress', e => update(e));
+    window.addEventListener('keydown', e => listenForDeleteOrEnter(e));
+    return () => {
+      window.removeEventListener('keypress', e => update(e));
+      window.removeEventListener('keydown', e => listenForDeleteOrEnter(e));
+    };
+  }, []);
 
   return (
     <>
@@ -204,7 +286,18 @@ export const Modal: React.FC<Props> = ({
           open={emailFlow}
           setCursorPointer={setCursorPointer}
         >
-          <EmailLogin activeBlink={activeBlink} active={emailFlow} />
+          {emailFlow && (
+            <EmailLogin
+              activeBlink={activeBlink}
+              inputBuffer={inputBuffer}
+              error={error}
+              setError={setError}
+              code={code}
+              setCode={setCode}
+              state={state}
+              setState={setState}
+            />
+          )}
         </Frame>
       )}
     </>

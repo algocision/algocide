@@ -99,7 +99,9 @@ const Home: NextPage<IPageProps> = ({}) => {
   const [stateInc, setStateInc] = useState<number>(0);
   const [activeBlink, setActiveBlink] = useState<boolean>(false);
   const [menuId, setMenuId] = useState<MenuId>('-1');
+  const [triggerLoginReset, setTriggerLoginReset] = useState<number>(0);
   const { emailFlowActive, setEmailFlowActive } = useActiveState();
+
 
   const [menuIndex, setMenuIndex] = useState<number>(0);
 
@@ -179,6 +181,7 @@ const Home: NextPage<IPageProps> = ({}) => {
         return;
       }
       if (emailFlowActive && !modalActive) {
+        setTriggerLoginReset(p => p + 1);
         setEmailFlowActive(false);
         setModalActive(true);
         setMenuIndex(0);
@@ -332,6 +335,7 @@ const Home: NextPage<IPageProps> = ({}) => {
             engageItem={engageItem}
             emailFlow={emailFlowActive}
             setEmailFlow={setEmailFlowActive}
+            triggerLoginReset={triggerLoginReset}
           />
           {!modalActive &&
             !emailFlowActive &&

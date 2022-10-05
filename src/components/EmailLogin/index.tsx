@@ -1,78 +1,21 @@
 import { aes_decode } from '@/src/util/auth/aes';
+import isValidEmail from '@/src/util/isValidEmail';
 import { useEffect, useRef, useState } from 'react';
 import styles from './index.module.css';
 
 interface Props {
   activeBlink: boolean;
-  active: boolean;
+  inputBuffer: React.MutableRefObject<string>;
+  error: boolean;
+  setError: React.Dispatch<React.SetStateAction<boolean>>;
+  code: string;
+  setCode: React.Dispatch<React.SetStateAction<string>>;
+  state: '0' | '1' | '2' | '3';
+  setState: React.Dispatch<React.SetStateAction<'0' | '1' | '2' | '3'>>;
 }
 
-const EmailLogin: React.FC<Props> = ({ activeBlink, active }) => {
-  const inputBuffer = useRef<string>(''); 
-
-  const [error, setError] = useState<boolean>(false);
-  const [code, setCode] = useState<string>('-1');
-
-  const [state, setState] = useState<'0' | '1' | '2' | '3'>('0');
- 
-  useEffect(() => {
-    if (code !== '-1' && !error) {
-      inputBuffer.current = '';
-      setState('1');
-    }
-  }, [code, error]);
-
-  useEffect(() => {
-    if (state === '1' && code === inputBuffer.current) {
-      inputBuffer.current = '';
-      setState('2');
-    }
-  }, [state, inputBuffer.current]);
-
-  const submit = async () => {
-    const fetch_res = await fetch(
-      `/api/verify-email?email=${inputBuffer.current}`
-    );
-    const verification_res = await fetch_res.json();
-    if (verification_res.error) {
-      setError(true);
-    } else {
-      setCode(aes_decode(verification_res.auth));
-    }
-  };
-
-  useEffect(() => {
-    const update = (e: KeyboardEvent) => {  
-      if (e.key === 'Delete') {
-        inputBuffer.current = '';
-        return;
-      }
-      if (e.key === 'Enter') {
-        return;
-      }
-      const p = inputBuffer.current;
-      inputBuffer.current = `${p}${e.key}`;
-    };
-
-    const listenForDeleteOrEnter = (e: KeyboardEvent) => { 
-      if (e.key === 'Backspace') {
-        const p = inputBuffer.current;
-        inputBuffer.current = `${p.slice(0, p.length - 1)}`;
-        return;
-      }
-      if (e.key === 'Enter') {
-        submit();
-        return;
-      }
-    };
-    window.addEventListener('keypress', e => update(e));
-    window.addEventListener('keydown', e => listenForDeleteOrEnter(e));
-    return () => {
-      window.removeEventListener('keypress', e => update(e));
-      window.removeEventListener('keydown', e => listenForDeleteOrEnter(e));
-    };
-  }, []);
-
+const EmailLogin: React.FC<Props> = ({ activeBlink, inputBuffer, error, setError, code, setCode, state, setState }) => { 
+  
   switch (state) {
     case '0': {
       return (
