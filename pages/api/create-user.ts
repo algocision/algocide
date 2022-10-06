@@ -56,8 +56,8 @@ export default async function handler(
             userId: id,
             username: userPayload.username ? userPayload.username : id,
             walletAddress: userPayload.walletAddress,
-            createdAt: Date.now() / 1000,
-            updatedAt: Date.now() / 1000,
+            createdAt: Math.floor(Date.now() / 1000),
+            updatedAt: Math.floor(Date.now() / 1000),
           },
         });
         if (new_user) {
@@ -107,8 +107,8 @@ export default async function handler(
             username: userPayload.username ? userPayload.username : id,
             email: userPayload.email,
             password: hashed_password,
-            createdAt: Date.now() / 1000,
-            updatedAt: Date.now() / 1000,
+            createdAt: Math.floor(Date.now() / 1000),
+            updatedAt: Math.floor(Date.now() / 1000),
           },
         });
         if (new_user) {

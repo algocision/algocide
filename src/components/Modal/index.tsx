@@ -92,10 +92,19 @@ export const Modal: React.FC<Props> = ({
 
   // Below is logic for EmailLogin
   const inputBuffer = useRef<string>('');
+  const stateBuffer = useRef<
+    | 'not logged in'
+    | 'enter email code'
+    | 'enter password existing'
+    | 'enter password create'
+    | 'loading'
+  >('not logged in');
+  const emailRef = useRef<string>('');
 
   const [error, setError] = useState<boolean>(false);
   const [code, setCode] = useState<string>('-1');
-  const [email, setEmail] = useState<string>('');
+  // const [email, setEmail] = useState<string>('');
+
 
   const [state, setState] = useState<
     | 'not logged in'
@@ -128,7 +137,12 @@ export const Modal: React.FC<Props> = ({
     }
   }, [triggerLoginReset]);
 
+  useEffect(() => {
+    stateBuffer.current = state;
+  }, [state]);
+
   const createUser = async () => {
+    console.log(`createUser pwd:`, inputBuffer.current);
     if (!isValidPassword(inputBuffer.current)) {
       return;
     }
@@ -137,7 +151,7 @@ export const Modal: React.FC<Props> = ({
       body: JSON.stringify({
         type: 'web2',
         payload: {
-          email: email,
+          email: emailRef.current,
           password: aes_encode(inputBuffer.current),
         },
       }),
@@ -173,10 +187,10 @@ export const Modal: React.FC<Props> = ({
     const verification_res = await fetch_res.json();
     if (verification_res.error) {
       setError(true);
-      setEmail('');
+      emailRef.current = '';
     } else {
       setCode(aes_decode(verification_res.auth));
-      setEmail(inputBuffer.current);
+      emailRef.current = inputBuffer.current;
     }
   };
 
@@ -206,12 +220,11 @@ export const Modal: React.FC<Props> = ({
         inputBuffer.current = `${p.slice(0, p.length - 1)}`;
         return;
       }
-      if (e.key === 'Enter') {
-        console.log(`state`, state);
-        if (state === 'not logged in') {
+      if (e.key === 'Enter') { 
+        if (stateBuffer.current === 'not logged in') {
           submitEmail();
         }
-        if (state === 'enter password create') {
+        if (stateBuffer.current === 'enter password create') {
           createUser();
         }
         return;
