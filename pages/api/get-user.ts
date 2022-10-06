@@ -16,6 +16,7 @@ export default async function handler(
     const user = await prisma.user.findFirst({
       where: {
         walletAddress: userData.walletAddress,
+        email: userData.email,
       },
     });
 
@@ -23,18 +24,25 @@ export default async function handler(
       res.status(200).json({
         data: { username: user.username, user: userData.userId },
         message: `User ${user.userId} found`,
+        found: true,
         error: false,
       });
     } else {
       res.status(200).json({
         message: `No user with address '${userData.walletAddress}'`,
+        found: false,
         error: false,
       });
     }
   } catch (e: any) {
     res
       .status(400)
-      .json({ data: userData, message: e.toString(), error: true });
+      .json({
+        data: userData,
+        message: e.toString(),
+        error: true,
+        found: false,
+      });
   }
 }
 

@@ -6,7 +6,8 @@ import { walletLogin } from '@/src/util/walletLogin';
 import { useWallet } from '@/src/hooks/useWallets';
 import EmailLogin from '../EmailLogin';
 import isValidEmail from '@/src/util/isValidEmail';
-import { aes_decode } from '@/src/util/auth/aes';
+import { aes_decode, aes_encode } from '@/src/util/auth/aes';
+import isValidPassword from '@/src/util/isValidPassword';
 
 interface Props {
   modalActive: boolean;
@@ -94,20 +95,27 @@ export const Modal: React.FC<Props> = ({
 
   const [error, setError] = useState<boolean>(false);
   const [code, setCode] = useState<string>('-1');
+  const [email, setEmail] = useState<string>('');
 
-  const [state, setState] = useState<'0' | '1' | '2' | '3'>('0');
+  const [state, setState] = useState<
+    | 'not logged in'
+    | 'enter email code'
+    | 'enter password existing'
+    | 'enter password create'
+    | 'loading'
+  >('not logged in');
 
   useEffect(() => {
-    if (code !== '-1' && !error) {
+    if (code !== '-1' && !error && state === 'loading') {
       inputBuffer.current = '';
-      setState('1');
+      setState('enter email code');
     }
-  }, [code, error]);
+  }, [code, error, state]);
 
   useEffect(() => {
-    if (state === '1' && code === inputBuffer.current) {
+    if (state === 'enter email code' && code === inputBuffer.current) {
       inputBuffer.current = '';
-      setState('2');
+      setState('enter password create');
     }
   }, [state, inputBuffer.current]);
 
@@ -115,23 +123,60 @@ export const Modal: React.FC<Props> = ({
     if (triggerLoginReset > 0) {
       setError(false);
       setCode('-1');
-      setState('0');
+      setState('not logged in');
       inputBuffer.current = '';
     }
   }, [triggerLoginReset]);
 
-  const submit = async () => {
+  const createUser = async () => {
+    if (!isValidPassword(inputBuffer.current)) {
+      return;
+    }
+    const fetch_create_user = await fetch(`/api/create-user`, {
+      method: 'POST',
+      body: JSON.stringify({
+        type: 'web2',
+        payload: {
+          email: email,
+          password: aes_encode(inputBuffer.current),
+        },
+      }),
+    });
+
+    const create_user_res = await fetch_create_user.json();
+  };
+
+  const submitEmail = async () => {
     if (!isValidEmail(inputBuffer.current)) {
       return;
     }
+
+    const fetch_user_exists = await fetch(`/api/get-user`, {
+      method: 'POST',
+      body: JSON.stringify({
+        email: inputBuffer.current,
+      }),
+    });
+
+    const user_exists = await fetch_user_exists.json();
+
+    if (user_exists.found) {
+      setState('enter password existing');
+      return;
+    }
+
+    setState('loading');
+
     const fetch_res = await fetch(
       `/api/verify-email?email=${inputBuffer.current}`
     );
     const verification_res = await fetch_res.json();
     if (verification_res.error) {
       setError(true);
+      setEmail('');
     } else {
       setCode(aes_decode(verification_res.auth));
+      setEmail(inputBuffer.current);
     }
   };
 
@@ -145,17 +190,30 @@ export const Modal: React.FC<Props> = ({
         return;
       }
       const p = inputBuffer.current;
+      if (p.length >= 320) {
+        return;
+      }
       inputBuffer.current = `${p}${e.key}`;
     };
 
     const listenForDeleteOrEnter = (e: KeyboardEvent) => {
       if (e.key === 'Backspace') {
         const p = inputBuffer.current;
+
+        if (p.length >= 320) {
+          return;
+        }
         inputBuffer.current = `${p.slice(0, p.length - 1)}`;
         return;
       }
       if (e.key === 'Enter') {
-        submit();
+        console.log(`state`, state);
+        if (state === 'not logged in') {
+          submitEmail();
+        }
+        if (state === 'enter password create') {
+          createUser();
+        }
         return;
       }
     };
@@ -296,6 +354,7 @@ export const Modal: React.FC<Props> = ({
               setCode={setCode}
               state={state}
               setState={setState}
+              setCursorPointer={setCursorPointer}
             />
           )}
         </Frame>

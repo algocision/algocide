@@ -2,6 +2,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { PrismaClient } from '@prisma/client';
 import { IUser } from 'prisma/schema';
 import { v4 as uuid } from 'uuid';
+import argon2 from 'argon2';
+import { aes_decode } from '@/src/util/auth/aes';
 
 const prisma = new PrismaClient({
   datasources: { db: { url: process.env.DATABASE_URL } },
@@ -54,8 +56,8 @@ export default async function handler(
             userId: id,
             username: userPayload.username ? userPayload.username : id,
             walletAddress: userPayload.walletAddress,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
+            createdAt: Date.now() / 1000,
+            updatedAt: Date.now() / 1000,
           },
         });
         if (new_user) {
@@ -77,10 +79,56 @@ export default async function handler(
         .json({ data: createUserReq, message: e.toString(), error: true });
     }
   } else {
-    res.status(400).json({
-      message: 'Web2 user login not implemented',
-      error: true,
-    });
+    const userPayload = createUserReq.payload as Web2UserCreate;
+    try {
+      const user = await prisma.user.findFirst({
+        where: {
+          walletAddress: userPayload.email,
+        },
+      });
+
+      if (user) {
+        // User exists, return
+        res.status(200).json({
+          data: { userId: user.userId, username: user.username },
+          message: `User with email '${userPayload.email}' already exists`,
+          error: false,
+        });
+        return;
+      } else {
+        // Create user
+        const id = uuid();
+        const hashed_password = await argon2.hash(
+          aes_decode(userPayload.password)
+        );
+        const new_user = await prisma.user.create({
+          data: {
+            userId: id,
+            username: userPayload.username ? userPayload.username : id,
+            email: userPayload.email,
+            password: hashed_password,
+            createdAt: Date.now() / 1000,
+            updatedAt: Date.now() / 1000,
+          },
+        });
+        if (new_user) {
+          res.status(201).json({
+            data: { userId: new_user.userId, username: new_user.username },
+            message: `User '${new_user.userId}' created with email: '${userPayload.email}'`,
+            error: false,
+          });
+        } else {
+          res.status(400).json({
+            message: `User with email: '${userPayload.email}' failed to be created`,
+            error: true,
+          });
+        }
+      }
+    } catch (e: any) {
+      res
+        .status(400)
+        .json({ data: createUserReq, message: e.toString(), error: true });
+    }
   }
 
   // try {
