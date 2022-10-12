@@ -29,20 +29,20 @@ export default async function handler(
       });
     } else {
       res.status(200).json({
-        message: `No user with address '${userData.walletAddress}'`,
+        message: `No user found with ${userData.email ? 'email' : 'address'} '${
+          userData.email ? userData.email : userData.walletAddress
+        }'`,
         found: false,
         error: false,
       });
     }
   } catch (e: any) {
-    res
-      .status(400)
-      .json({
-        data: userData,
-        message: e.toString(),
-        error: true,
-        found: false,
-      });
+    res.status(400).json({
+      data: userData,
+      message: e.toString(),
+      error: true,
+      found: false,
+    });
   }
 }
 

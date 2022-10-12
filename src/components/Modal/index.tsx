@@ -105,7 +105,6 @@ export const Modal: React.FC<Props> = ({
   const [code, setCode] = useState<string>('-1');
   // const [email, setEmail] = useState<string>('');
 
-
   const [state, setState] = useState<
     | 'not logged in'
     | 'enter email code'
@@ -142,7 +141,6 @@ export const Modal: React.FC<Props> = ({
   }, [state]);
 
   const createUser = async () => {
-    console.log(`createUser pwd:`, inputBuffer.current);
     if (!isValidPassword(inputBuffer.current)) {
       return;
     }
@@ -160,6 +158,22 @@ export const Modal: React.FC<Props> = ({
     const create_user_res = await fetch_create_user.json();
   };
 
+  const signIn = async () => {
+    const fetch_sign_in = await fetch(`/api/sign-in`, {
+      method: 'POST',
+      body: JSON.stringify({
+        type: 'web2',
+        payload: {
+          email: emailRef.current,
+          password: aes_encode(inputBuffer.current),
+          token: aes_encode(Date.now().toString()),
+        },
+      }),
+    });
+
+    const sign_in_res = await fetch_sign_in.json();
+  };
+
   const submitEmail = async () => {
     if (!isValidEmail(inputBuffer.current)) {
       return;
@@ -175,6 +189,8 @@ export const Modal: React.FC<Props> = ({
     const user_exists = await fetch_user_exists.json();
 
     if (user_exists.found) {
+      emailRef.current = inputBuffer.current;
+      inputBuffer.current = '';
       setState('enter password existing');
       return;
     }
@@ -220,12 +236,19 @@ export const Modal: React.FC<Props> = ({
         inputBuffer.current = `${p.slice(0, p.length - 1)}`;
         return;
       }
-      if (e.key === 'Enter') { 
+      if (e.key === 'Enter') {
+        console.log(`stateBuffer.current`, stateBuffer.current);
         if (stateBuffer.current === 'not logged in') {
           submitEmail();
+          return;
         }
         if (stateBuffer.current === 'enter password create') {
           createUser();
+          return;
+        }
+        if (stateBuffer.current === 'enter password existing') {
+          signIn();
+          return;
         }
         return;
       }
