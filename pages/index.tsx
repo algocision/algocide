@@ -102,7 +102,6 @@ const Home: NextPage<IPageProps> = ({}) => {
   const [triggerLoginReset, setTriggerLoginReset] = useState<number>(0);
   const { emailFlowActive, setEmailFlowActive } = useActiveState();
 
-
   const [menuIndex, setMenuIndex] = useState<number>(0);
 
   const canvasRef = useRef<any>();
@@ -227,6 +226,10 @@ const Home: NextPage<IPageProps> = ({}) => {
         return true;
       }
       case 'login w/ email': {
+        const token = localStorage.getItem('token');
+        if (token) {
+          return true;
+        }
         setEmailFlowActive(true);
         setModalActive(false);
         setCursorPointer(false);

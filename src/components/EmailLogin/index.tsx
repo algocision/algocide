@@ -1,6 +1,7 @@
 import { aes_decode } from '@/src/util/auth/aes';
 import isValidEmail from '@/src/util/isValidEmail';
 import { useEffect, useRef, useState } from 'react';
+import { SignInStates } from '../Modal';
 import Spinner from '../Modal/_core/Spinner';
 import styles from './index.module.css';
 
@@ -12,21 +13,8 @@ interface Props {
   code: string;
   setCode: React.Dispatch<React.SetStateAction<string>>;
   setCursorPointer: React.Dispatch<React.SetStateAction<boolean>>;
-  state:
-    | 'not logged in'
-    | 'enter email code'
-    | 'enter password existing'
-    | 'enter password create'
-    | 'loading';
-  setState: React.Dispatch<
-    React.SetStateAction<
-      | 'not logged in'
-      | 'enter email code'
-      | 'enter password existing'
-      | 'enter password create'
-      | 'loading'
-    >
-  >;
+  state: SignInStates;
+  setState: React.Dispatch<React.SetStateAction<SignInStates>>;
 }
 
 const EmailLogin: React.FC<Props> = ({

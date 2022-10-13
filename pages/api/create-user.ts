@@ -4,6 +4,8 @@ import { IUser } from 'prisma/schema';
 import { v4 as uuid } from 'uuid';
 import argon2 from 'argon2';
 import { aes_decode } from '@/src/util/auth/aes';
+import { compress } from '@/src/util/UUID';
+import createToken from '@/src/util/auth/createToken';
 
 const prisma = new PrismaClient({
   datasources: { db: { url: process.env.DATABASE_URL } },
@@ -17,12 +19,14 @@ export interface ICreateUserReq {
 export interface Web3UserCreate {
   username?: string;
   walletAddress: string;
+  token: string;
 }
 
 export interface Web2UserCreate {
   username?: string;
   email: string;
   password: string;
+  token: string;
 }
 
 export default async function handler(
@@ -53,8 +57,10 @@ export default async function handler(
         const id = uuid();
         const new_user = await prisma.user.create({
           data: {
-            userId: id,
-            username: userPayload.username ? userPayload.username : id,
+            userId: compress(id),
+            username: userPayload.username
+              ? userPayload.username
+              : compress(id),
             walletAddress: userPayload.walletAddress,
             createdAt: Math.floor(Date.now() / 1000),
             updatedAt: Math.floor(Date.now() / 1000),
@@ -83,7 +89,7 @@ export default async function handler(
     try {
       const user = await prisma.user.findFirst({
         where: {
-          walletAddress: userPayload.email,
+          email: userPayload.email,
         },
       });
 
@@ -103,8 +109,10 @@ export default async function handler(
         );
         const new_user = await prisma.user.create({
           data: {
-            userId: id,
-            username: userPayload.username ? userPayload.username : id,
+            userId: compress(id),
+            username: userPayload.username
+              ? userPayload.username
+              : compress(id),
             email: userPayload.email,
             password: hashed_password,
             createdAt: Math.floor(Date.now() / 1000),
@@ -113,7 +121,12 @@ export default async function handler(
         });
         if (new_user) {
           res.status(201).json({
-            data: { userId: new_user.userId, username: new_user.username },
+            token: createToken({
+              type: 'web2',
+              userId: compress(id),
+              password: aes_decode(userPayload.password),
+              timeStamp: aes_decode(userPayload.token),
+            }),
             message: `User '${new_user.userId}' created with email: '${userPayload.email}'`,
             error: false,
           });

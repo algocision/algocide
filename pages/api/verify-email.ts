@@ -50,10 +50,7 @@ export default async function handler(
         <meta http-equiv="x-ua-compatible" content="ie=edge">
         <title>Email Confirmation</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style type="text/css">
-        /**
-         * Google webfonts. Recommended to include the .woff version for cross-client compatibility.
-         */
+        <style type="text/css"> 
         @media screen {
           @font-face {
             font-family: 'Source Sans Pro';

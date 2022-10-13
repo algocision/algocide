@@ -8,6 +8,16 @@ import EmailLogin from '../EmailLogin';
 import isValidEmail from '@/src/util/isValidEmail';
 import { aes_decode, aes_encode } from '@/src/util/auth/aes';
 import isValidPassword from '@/src/util/isValidPassword';
+import { SignInRes } from 'pages/api/sign-in';
+import verifyToken from '@/src/util/auth/verifyToken';
+
+export type SignInStates =
+  | 'not logged in'
+  | 'enter email code'
+  | 'enter password existing'
+  | 'enter password create'
+  | 'logged in'
+  | 'loading';
 
 interface Props {
   modalActive: boolean;
@@ -92,26 +102,14 @@ export const Modal: React.FC<Props> = ({
 
   // Below is logic for EmailLogin
   const inputBuffer = useRef<string>('');
-  const stateBuffer = useRef<
-    | 'not logged in'
-    | 'enter email code'
-    | 'enter password existing'
-    | 'enter password create'
-    | 'loading'
-  >('not logged in');
+  const stateBuffer = useRef<SignInStates>('not logged in');
   const emailRef = useRef<string>('');
 
   const [error, setError] = useState<boolean>(false);
   const [code, setCode] = useState<string>('-1');
   // const [email, setEmail] = useState<string>('');
 
-  const [state, setState] = useState<
-    | 'not logged in'
-    | 'enter email code'
-    | 'enter password existing'
-    | 'enter password create'
-    | 'loading'
-  >('not logged in');
+  const [state, setState] = useState<SignInStates>('not logged in');
 
   useEffect(() => {
     if (code !== '-1' && !error && state === 'loading') {
@@ -124,6 +122,15 @@ export const Modal: React.FC<Props> = ({
     if (state === 'enter email code' && code === inputBuffer.current) {
       inputBuffer.current = '';
       setState('enter password create');
+    }
+    if (state === 'logged in') {
+      setModalActive(false);
+      setError(false);
+      setCode('-1'); 
+      setMenuId('-1');
+      setSelectedNavIndex(0);
+      setEmailFlow(false);
+      inputBuffer.current = '';
     }
   }, [state, inputBuffer.current]);
 
@@ -151,11 +158,19 @@ export const Modal: React.FC<Props> = ({
         payload: {
           email: emailRef.current,
           password: aes_encode(inputBuffer.current),
+          token: aes_encode(Date.now().toString()),
         },
       }),
     });
 
     const create_user_res = await fetch_create_user.json();
+    if (create_user_res.error) {
+      return;
+    }
+    if (create_user_res.token) {
+      localStorage.setItem('token', create_user_res.token);
+      setState('logged in');
+    }
   };
 
   const signIn = async () => {
@@ -171,7 +186,14 @@ export const Modal: React.FC<Props> = ({
       }),
     });
 
-    const sign_in_res = await fetch_sign_in.json();
+    const sign_in_res: SignInRes = await fetch_sign_in.json();
+    if (sign_in_res.error) {
+      return;
+    }
+    if (sign_in_res.token) {
+      localStorage.setItem('token', sign_in_res.token);
+      setState('logged in');
+    }
   };
 
   const submitEmail = async () => {
@@ -237,7 +259,6 @@ export const Modal: React.FC<Props> = ({
         return;
       }
       if (e.key === 'Enter') {
-        console.log(`stateBuffer.current`, stateBuffer.current);
         if (stateBuffer.current === 'not logged in') {
           submitEmail();
           return;
