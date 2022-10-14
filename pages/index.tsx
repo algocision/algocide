@@ -19,7 +19,7 @@ import {
 } from '@/src/util/menuTraverse';
 import { Modal } from '@/src/components/Modal';
 import { useConnectWallet } from '@/src/components/ConnectWallet/useConnectWallet';
-import useActiveState from '@/src/hooks/useActiveState';
+import IAppContext, { IAppContextInit } from '@/src/types/IAppContext';
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
@@ -94,15 +94,7 @@ const Home: NextPage<IPageProps> = ({}) => {
     error: error2,
   } = useConnectWallet('walletconnect');
 
-  const [cursorPointer, setCursorPointer] = useState<boolean>(false);
-  const [modalActive, setModalActive] = useState<boolean>(false);
-  const [stateInc, setStateInc] = useState<number>(0);
-  const [activeBlink, setActiveBlink] = useState<boolean>(false);
-  const [menuId, setMenuId] = useState<MenuId>('-1');
-  const [triggerLoginReset, setTriggerLoginReset] = useState<number>(0);
-  const { emailFlowActive, setEmailFlowActive } = useActiveState();
-
-  const [menuIndex, setMenuIndex] = useState<number>(0);
+  const [ctx, setCtx] = useState<IAppContext>(IAppContextInit);
 
   const canvasRef = useRef<any>();
   const textRef1 = useRef<any>();
@@ -129,13 +121,13 @@ const Home: NextPage<IPageProps> = ({}) => {
     const blinkInit = async () => {
       while (true) {
         await sleep(500);
-        setActiveBlink(p => !p);
+        setCtx(p => ({ ...p, activeBlink: !p.activeBlink }));
       }
     };
-    if (stateInc === 0) {
+    if (ctx.stateInc === 0) {
       blinkInit();
     }
-  }, [stateInc]);
+  }, [ctx.stateInc]);
 
   useEffect(() => {
     if (textRef1 && textRef1.current && windowWidth) {
@@ -146,49 +138,64 @@ const Home: NextPage<IPageProps> = ({}) => {
   }, [textRef1, windowWidth]);
 
   useEffect(() => {
-    setStateInc(p => p + 1);
-  }, [stateInc]);
+    setCtx(p => ({ ...p, stateInc: p.stateInc + 1 }));
+  }, []);
 
   useEffect(() => {
     if (keys.up === 1) {
-      setMenuIndex(p => (p === 0 ? MENU[menuId].length - 1 : p - 1));
+      setCtx(p => ({
+        ...p,
+        menuIndex:
+          p.menuIndex === 0 ? MENU[ctx.menuId].length - 1 : p.menuIndex - 1,
+      }));
       return;
     }
     if (keys.down === 1) {
-      setMenuIndex(p => (p === MENU[menuId].length - 1 ? 0 : p + 1));
+      setCtx(p => ({
+        ...p,
+        menuIndex:
+          p.menuIndex === MENU[ctx.menuId].length - 1 ? 0 : p.menuIndex + 1,
+      }));
       return;
     }
 
     if (keys.enter === 1) {
-      if (emailFlowActive) {
+      console.log(`ctx`, ctx);
+      console.log(`menuIndex`, ctx.menuIndex);
+      if (ctx.emailFlowActive) {
         // Block enter key from interfering with key listener in
         // @/src/components/EmailLogin/index.tsx
         return;
       }
-      if (menuId === '-1') {
-        setMenuIndex(0);
-        setModalActive(true);
-        setMenuId(`${menuIndex}` as MenuId);
+      if (ctx.menuId === '-1') {
+        setCtx(p => ({
+          ...p,
+          modalActive: true,
+          menuIndex: 0,
+          menuId: `0` as MenuId,
+        }));
         return;
       }
-      engageItem(get_opt_from_index(menuIndex, menuId));
+      engageItem(get_opt_from_index(ctx.menuIndex, ctx.menuId));
       return;
     }
     if (keys.escape === 1) {
-      if (modalActive && back(menuId) !== '-1') {
-        setMenuId(back(menuId));
+      if (ctx.modalActive && back(ctx.menuId) !== '-1') {
+        setCtx(p => ({ ...p, menuId: back(p.menuId) }));
         return;
       }
-      if (emailFlowActive && !modalActive) {
-        setTriggerLoginReset(p => p + 1);
-        setEmailFlowActive(false);
-        setModalActive(true);
-        setMenuIndex(0);
-        setMenuId('0');
+      if (ctx.emailFlowActive && !ctx.modalActive) {
+        setCtx(p => ({
+          ...p,
+          triggerLoginReset: p.triggerLoginReset + 1,
+          emailFlowActive: false,
+          modalActive: true,
+          menuId: '0',
+        }));
         return;
       }
 
-      setModalActive(false);
+      setCtx(p => ({ ...p, modalActive: false }));
     }
   }, [keys]);
 
@@ -213,8 +220,11 @@ const Home: NextPage<IPageProps> = ({}) => {
         return true;
       }
       case 'connect wallet': {
-        setMenuId('0-0');
-        setMenuIndex(0);
+        setCtx(p => ({
+          ...p,
+          menuId: '0-0',
+          menuIndex: 0,
+        }));
         return true;
       }
       case 'pcparttracker': {
@@ -227,12 +237,15 @@ const Home: NextPage<IPageProps> = ({}) => {
       }
       case 'login w/ email': {
         const token = localStorage.getItem('token');
-        if (token) {
+        if (token && token !== '') {
           return true;
         }
-        setEmailFlowActive(true);
-        setModalActive(false);
-        setCursorPointer(false);
+        setCtx(p => ({
+          ...p,
+          emailFlowActive: true,
+          modalActive: false,
+          cursorPointer: false,
+        }));
         return true;
       }
       default: {
@@ -248,12 +261,7 @@ const Home: NextPage<IPageProps> = ({}) => {
         <meta name="description" content="Home Page" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div
-        className={styles.container}
-        // style={{
-        //   background: `radial-gradient(circle at ${cursorX}px ${cursorY}px, rgba(255,255,255,1) 20px, rgba(0,0,0,1) 150px)`,
-        // }}
-      >
+      <div className={styles.container}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width={windowWidth}
@@ -285,7 +293,9 @@ const Home: NextPage<IPageProps> = ({}) => {
           {!isMobile && (
             <circle
               className={
-                cursorPointer ? styles.cursorFollowHover : styles.cursorFollow
+                ctx.cursorPointer
+                  ? styles.cursorFollowHover
+                  : styles.cursorFollow
               }
               cx={cursorX}
               cy={cursorY}
@@ -300,18 +310,13 @@ const Home: NextPage<IPageProps> = ({}) => {
             {!isMobile && (
               <circle
                 className={
-                  cursorPointer ? styles.cursorFollowHover : styles.cursorFollow
+                  ctx.cursorPointer
+                    ? styles.cursorFollowHover
+                    : styles.cursorFollow
                 }
                 cx={cursorX}
                 cy={cursorY}
-                // r={clickActive ? '1px' : '15px'}
                 r="15px"
-                // style={{ transition: ' 0.02s linear' }}
-                // points={`${cursorX - 30},${cursorY - 30}, ${cursorX + 30},${
-                //   cursorY - 30
-                // }, ${cursorX + 30},${cursorY + 30}, ${cursorX - 30},${
-                //   cursorY + 30
-                // }`}
               />
             )}
             <text
@@ -326,40 +331,30 @@ const Home: NextPage<IPageProps> = ({}) => {
           </clipPath>
         </svg>
         <div className={styles.navContainer}>
-          <Modal
-            modalActive={modalActive}
-            setModalActive={setModalActive}
-            activeBlink={activeBlink}
-            setCursorPointer={setCursorPointer}
-            menuId={menuId}
-            setMenuId={setMenuId}
-            setSelectedNavIndex={setMenuIndex}
-            selectedNavIndex={menuIndex}
-            engageItem={engageItem}
-            emailFlow={emailFlowActive}
-            setEmailFlow={setEmailFlowActive}
-            triggerLoginReset={triggerLoginReset}
-          />
-          {!modalActive &&
-            !emailFlowActive &&
+          <Modal ctx={ctx} setCtx={setCtx} engageItem={engageItem} />
+          {!ctx.modalActive &&
+            !ctx.emailFlowActive &&
             MENU['-1'].map((item: string, index: number) => {
               return (
                 <div
                   key={item}
                   style={{ display: 'flex', width: `100px`, padding: 10 }}
                   onMouseEnter={() => {
-                    setCursorPointer(true);
+                    setCtx(p => ({ ...p, cursorPointer: true }));
                   }}
                   onMouseLeave={() => {
-                    setCursorPointer(false);
+                    setCtx(p => ({ ...p, cursorPointer: false }));
                   }}
                   onClick={() => {
-                    setMenuId(`${index}` as MenuId);
-                    setModalActive(true);
-                    setCursorPointer(false);
+                    setCtx(p => ({
+                      ...p,
+                      menuId: `${index}` as MenuId,
+                      modalActive: true,
+                      cursorPointer: false,
+                    }));
                   }}
                 >
-                  {menuIndex === index && (
+                  {ctx.menuIndex === index && (
                     <div
                       className={styles.navItem}
                       style={{ marginRight: 6, marginLeft: -14 }}
@@ -368,9 +363,9 @@ const Home: NextPage<IPageProps> = ({}) => {
                     </div>
                   )}
                   <div className={styles.navItem}>{item}</div>
-                  {menuIndex === index && (
+                  {ctx.menuIndex === index && (
                     <div className={styles.navItem}>
-                      {activeBlink ? '_' : ''}
+                      {ctx.activeBlink ? '_' : ''}
                     </div>
                   )}
                 </div>

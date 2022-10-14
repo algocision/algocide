@@ -10,6 +10,7 @@ import { aes_decode, aes_encode } from '@/src/util/auth/aes';
 import isValidPassword from '@/src/util/isValidPassword';
 import { SignInRes } from 'pages/api/sign-in';
 import verifyToken from '@/src/util/auth/verifyToken';
+import IAppContext from '@/src/types/IAppContext';
 
 export type SignInStates =
   | 'not logged in'
@@ -20,41 +21,18 @@ export type SignInStates =
   | 'loading';
 
 interface Props {
-  modalActive: boolean;
-  setModalActive: React.Dispatch<React.SetStateAction<boolean>>;
-  menuId: MenuId;
-  setMenuId: React.Dispatch<React.SetStateAction<MenuId>>;
-  selectedNavIndex: number;
-  setSelectedNavIndex: React.Dispatch<React.SetStateAction<number>>;
-  activeBlink: boolean;
-  setCursorPointer: React.Dispatch<React.SetStateAction<boolean>>;
+  ctx: IAppContext;
+  setCtx: React.Dispatch<React.SetStateAction<IAppContext>>;
   engageItem: (el: MenuOpt) => boolean;
-  emailFlow: boolean;
-  setEmailFlow: React.Dispatch<React.SetStateAction<boolean>>;
-  triggerLoginReset: number;
 }
 
-export const Modal: React.FC<Props> = ({
-  modalActive,
-  setModalActive,
-  activeBlink,
-  setCursorPointer,
-  menuId,
-  setMenuId,
-  setSelectedNavIndex,
-  selectedNavIndex,
-  engageItem,
-  emailFlow,
-  setEmailFlow,
-  triggerLoginReset,
-}) => {
+export const Modal: React.FC<Props> = ({ ctx, setCtx, engageItem }) => {
   // Reset indices on close
   useEffect(() => {
-    if (!modalActive) {
-      setMenuId('-1');
-      setSelectedNavIndex(0);
+    if (!ctx.modalActive) {
+      setCtx(p => ({ ...p, menuId: '-1', menuIndex: 0 }));
     }
-  }, [modalActive]);
+  }, [ctx.modalActive]);
 
   const { connectedAddress, activeWallet } = useWallet();
 
@@ -124,24 +102,27 @@ export const Modal: React.FC<Props> = ({
       setState('enter password create');
     }
     if (state === 'logged in') {
-      setModalActive(false);
+      setCtx(p => ({
+        ...p,
+        emailFlowActive: false,
+        menuId: '-1',
+        modalActive: false,
+        menuIndex: 0,
+      }));
       setError(false);
-      setCode('-1'); 
-      setMenuId('-1');
-      setSelectedNavIndex(0);
-      setEmailFlow(false);
+      setCode('-1');
       inputBuffer.current = '';
     }
   }, [state, inputBuffer.current]);
 
   useEffect(() => {
-    if (triggerLoginReset > 0) {
+    if (ctx.triggerLoginReset > 0) {
       setError(false);
       setCode('-1');
       setState('not logged in');
       inputBuffer.current = '';
     }
-  }, [triggerLoginReset]);
+  }, [ctx.triggerLoginReset]);
 
   useEffect(() => {
     stateBuffer.current = state;
@@ -284,18 +265,18 @@ export const Modal: React.FC<Props> = ({
 
   return (
     <>
-      {modalActive && (
+      {ctx.modalActive && (
         <Frame
           loading={false}
-          header={menuId[0] === '0' ? 'connect' : 'explore'}
-          open={modalActive}
-          setIsOpen={setModalActive}
-          setCursorPointer={setCursorPointer}
+          header={ctx.menuId[0] === '0' ? 'connect' : 'explore'}
+          open={ctx.modalActive}
+          setIsOpen={val => setCtx(p => ({ ...p, modalActive: val }))}
+          setCursorPointer={val => setCtx(p => ({ ...p, cursorPointer: val }))}
         >
           <>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {modalActive &&
-                MENU[menuId].map((item: MenuOpt, index: number) => {
+              {ctx.modalActive &&
+                MENU[ctx.menuId].map((item: MenuOpt, index: number) => {
                   return item === 'metamask' ||
                     item === 'coinbase wallet' ||
                     item === 'walletconnect' ? (
@@ -310,21 +291,24 @@ export const Modal: React.FC<Props> = ({
                           padding: 10,
                         }}
                         onMouseEnter={() => {
-                          setCursorPointer(true);
+                          setCtx(p => ({ ...p, cursorPointer: true }));
                         }}
                         onMouseLeave={() => {
-                          setCursorPointer(false);
+                          setCtx(p => ({ ...p, cursorPointer: false }));
                         }}
                         onClick={() => {
                           if (!engageItem(item)) {
-                            setSelectedNavIndex(index);
-                            setCursorPointer(false);
+                            setCtx(p => ({
+                              ...p,
+                              cursorPointer: false,
+                              menuIndex: index,
+                            }));
                           } else {
-                            setSelectedNavIndex(0);
+                            setCtx(p => ({ ...p, menuIndex: 0 }));
                           }
                         }}
                       >
-                        {selectedNavIndex === index && (
+                        {ctx.menuIndex === index && (
                           <div
                             className={styles.navItem}
                             style={{ marginRight: 6, marginLeft: -14 }}
@@ -340,9 +324,9 @@ export const Modal: React.FC<Props> = ({
                         >
                           {getMenuText(item)}
                         </div>
-                        {selectedNavIndex === index && (
+                        {ctx.menuIndex === index && (
                           <div className={styles.navItem}>
-                            {activeBlink ? '_' : ''}
+                            {ctx.activeBlink ? '_' : ''}
                           </div>
                         )}
                       </div>
@@ -359,19 +343,22 @@ export const Modal: React.FC<Props> = ({
                           padding: 10,
                         }}
                         onMouseEnter={() => {
-                          setCursorPointer(true);
+                          setCtx(p => ({ ...p, cursorPointer: true }));
                         }}
                         onMouseLeave={() => {
-                          setCursorPointer(false);
+                          setCtx(p => ({ ...p, cursorPointer: false }));
                         }}
                         onClick={() => {
                           if (!engageItem(item)) {
-                            setSelectedNavIndex(index);
-                            setCursorPointer(false);
+                            setCtx(p => ({
+                              ...p,
+                              cursorPointer: false,
+                              menuIndex: index,
+                            }));
                           }
                         }}
                       >
-                        {selectedNavIndex === index && (
+                        {ctx.menuIndex === index && (
                           <div
                             className={styles.navItem}
                             style={{ marginRight: 6, marginLeft: -14 }}
@@ -380,9 +367,9 @@ export const Modal: React.FC<Props> = ({
                           </div>
                         )}
                         <div className={styles.navItem}>{item}</div>
-                        {selectedNavIndex === index && (
+                        {ctx.menuIndex === index && (
                           <div className={styles.navItem}>
-                            {activeBlink ? '_' : ''}
+                            {ctx.activeBlink ? '_' : ''}
                           </div>
                         )}
                       </div>
@@ -393,17 +380,17 @@ export const Modal: React.FC<Props> = ({
           </>
         </Frame>
       )}
-      {emailFlow && (
+      {ctx.emailFlowActive && (
         <Frame
           loading={false}
           header={'login w/ email'}
-          setIsOpen={setEmailFlow}
-          open={emailFlow}
-          setCursorPointer={setCursorPointer}
+          setIsOpen={val => setCtx(p => ({ ...p, emailFlowActive: val }))}
+          open={ctx.emailFlowActive}
+          setCursorPointer={val => setCtx(p => ({ ...p, cursorPointer: val }))}
         >
-          {emailFlow && (
+          {ctx.emailFlowActive && (
             <EmailLogin
-              activeBlink={activeBlink}
+              activeBlink={ctx.activeBlink}
               inputBuffer={inputBuffer}
               error={error}
               setError={setError}
@@ -411,7 +398,9 @@ export const Modal: React.FC<Props> = ({
               setCode={setCode}
               state={state}
               setState={setState}
-              setCursorPointer={setCursorPointer}
+              setCursorPointer={val =>
+                setCtx(p => ({ ...p, cursorPointer: val }))
+              }
             />
           )}
         </Frame>

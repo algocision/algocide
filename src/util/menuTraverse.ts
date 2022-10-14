@@ -23,16 +23,6 @@ export const MENU: Record<MenuId, MenuOpt[]> = {
   '0-0': ['metamask', 'coinbase wallet', 'walletconnect'],
 };
 
-// export const opt_to_id = (opt: MenuOpt) => {
-//   Object.keys(MENU).map(key => {
-//     console.log(
-//       `${opt} = ${MENU[key as MenuId].indexOf(opt)}: ${MENU[
-//         key as MenuId
-//       ].includes(opt)}`
-//     );
-//   });
-// };
-
 export const get_opt_from_index = (
   index: number,
   current_id: MenuId

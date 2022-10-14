@@ -12,7 +12,7 @@ interface Props {
   setError: React.Dispatch<React.SetStateAction<boolean>>;
   code: string;
   setCode: React.Dispatch<React.SetStateAction<string>>;
-  setCursorPointer: React.Dispatch<React.SetStateAction<boolean>>;
+  setCursorPointer: (val: boolean) => void
   state: SignInStates;
   setState: React.Dispatch<React.SetStateAction<SignInStates>>;
 }

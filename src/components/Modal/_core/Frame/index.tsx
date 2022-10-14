@@ -7,8 +7,8 @@ interface Props {
   height?: string;
   header?: string;
   open: boolean;
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setCursorPointer: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsOpen: (val: boolean) => void;
+  setCursorPointer: (val: boolean) => void;
   loading: boolean;
 }
 
