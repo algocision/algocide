@@ -1,6 +1,8 @@
 import { RefreshRes } from 'pages/api/refresh-auth';
 
-export const verifyToken = async (token: string) => {
+export const refreshToken = async (
+  token: string
+): Promise<{ token: string; valid: boolean }> => {
   const verified_fetch_res = await fetch(`/api/refresh-auth`, {
     method: 'POST',
     body: JSON.stringify({ token: token }),
@@ -9,9 +11,9 @@ export const verifyToken = async (token: string) => {
   const verified_res: RefreshRes = await verified_fetch_res.json();
 
   if (verified_res.valid) {
-    return true;
+    return { token: verified_res.updated_token, valid: true };
   }
-  return false;
+  return { token: '', valid: false };
 };
 
-export default verifyToken;
+export default refreshToken;

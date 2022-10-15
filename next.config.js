@@ -16,6 +16,7 @@ const env = {
   GMAIL_CLIENT_ID: process.env.GMAIL_CLIENT_ID,
   GMAIL_CLIENT_SECRET: process.env.GMAIL_CLIENT_SECRET,
   GMAIL_REDIRECT_URI: process.env.GMAIL_REDIRECT_URI,
+  EXPIRATION_TIME: process.env.EXPIRATION_TIME,
 };
 
 module.exports = {

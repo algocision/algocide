@@ -8,7 +8,6 @@ import styles from '../src/styles/pages/index.module.css';
 import { IPageProps } from './_app';
 import useClick from '@/src/hooks/useClick';
 import { isMobile } from 'react-device-detect';
-import Frame from '@/src/components/Modal/_core/Frame';
 import {
   back,
   get_opt_from_index,
@@ -20,6 +19,7 @@ import {
 import { Modal } from '@/src/components/Modal';
 import { useConnectWallet } from '@/src/components/ConnectWallet/useConnectWallet';
 import IAppContext, { IAppContextInit } from '@/src/types/IAppContext';
+import verifyToken from '@/src/util/auth/verifyToken';
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
@@ -160,8 +160,6 @@ const Home: NextPage<IPageProps> = ({}) => {
     }
 
     if (keys.enter === 1) {
-      console.log(`ctx`, ctx);
-      console.log(`menuIndex`, ctx.menuIndex);
       if (ctx.emailFlowActive) {
         // Block enter key from interfering with key listener in
         // @/src/components/EmailLogin/index.tsx
@@ -238,6 +236,7 @@ const Home: NextPage<IPageProps> = ({}) => {
       case 'login w/ email': {
         const token = localStorage.getItem('token');
         if (token && token !== '') {
+          verifyToken(token);
           return true;
         }
         setCtx(p => ({
