@@ -1,6 +1,8 @@
 import { useConnectWallet } from '@/src/components/ConnectWallet/useConnectWallet';
 import { useWallet } from '@/src/hooks/useWallets';
+import IAppContext, { IAppContextInit } from '@/src/types/IAppContext';
 import getToken from '@/src/util/auth/getToken';
+import refreshToken from '@/src/util/auth/refreshToken';
 import { verify } from '@/src/util/auth/verify';
 import { providers } from 'ethers';
 import { NextPage } from 'next';
@@ -14,6 +16,8 @@ import '../src/styles/globals.css';
 export interface IPageProps {
   darkMode: boolean;
   setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
+  ctx: IAppContext;
+  setCtx: React.Dispatch<React.SetStateAction<IAppContext>>;
   connectedAddress?: string;
   connectWallet: () => Promise<void>;
   disconnect: () => Promise<void>;
@@ -29,7 +33,7 @@ export default function App(props: IRootProps) {
   const [darkMode, setDarkMode] = useState<boolean>();
 
   const { connectedAddress } = useWallet();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [ctx, setCtx] = useState<IAppContext>(IAppContextInit);
 
   useEffect(() => {
     if (darkMode !== undefined) {
@@ -46,12 +50,31 @@ export default function App(props: IRootProps) {
   }, [darkMode]);
 
   useEffect(() => {
+    const auth_init = async (token: string) => {
+      if (token !== '') {
+        const refresh = await refreshToken(token);
+        if (refresh.valid) {
+          setCtx(p => ({ ...p, token: refresh.token }));
+          localStorage.setItem('token', refresh.token);
+        } else {
+          localStorage.setItem('token', '');
+        }
+      } else {
+        localStorage.setItem('token', '');
+      }
+    };
+
+    // Initialize darkmode preference
     const root = window.document.documentElement;
     const initialColorValue = root.style.getPropertyValue(
       '--initial-color-mode'
     );
     // Set initial darkmode to light
     setDarkMode(initialColorValue === 'dark');
+
+    // Initialize auth
+    const prevToken = localStorage.getItem('token') || '';
+    auth_init(prevToken);
   }, []);
 
   // useEffect(() => {
@@ -112,7 +135,12 @@ export default function App(props: IRootProps) {
         id="gtag"
       >{`window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments)} gtag('js', new Date()); gtag('config', '${process.env.GA_TAG}');`}</Script>
 
-      <Component darkMode={darkMode} setDarkMode={setDarkMode} />
+      <Component
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+        ctx={ctx}
+        setCtx={setCtx}
+      />
     </>
   );
 }

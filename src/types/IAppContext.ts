@@ -1,13 +1,8 @@
 import { MenuId } from '../util/menuTraverse';
 
-//   const [cursorPointer, setCursorPointer] = useState<boolean>(false);
-//   const [modalActive, setModalActive] = useState<boolean>(false);
-//   const [stateInc, setStateInc] = useState<number>(0);
-//   const [activeBlink, setActiveBlink] = useState<boolean>(false);
-//   const [menuId, setMenuId] = useState<MenuId>('-1');
-//   const [triggerLoginReset, setTriggerLoginReset] = useState<number>(0);
-
 export default interface IAppContext {
+  authenticated: boolean;
+  token: string;
   cursorPointer: boolean;
   modalActive: boolean;
   stateInc: number;
@@ -16,9 +11,12 @@ export default interface IAppContext {
   triggerLoginReset: number;
   emailFlowActive: boolean;
   menuIndex: number;
+  text1: { x?: number; y?: number; width?: number; height?: number };
 }
 
 export const IAppContextInit: IAppContext = {
+  authenticated: false,
+  token: '',
   cursorPointer: false,
   modalActive: false,
   stateInc: 0,
@@ -27,4 +25,5 @@ export const IAppContextInit: IAppContext = {
   triggerLoginReset: 0,
   emailFlowActive: false,
   menuIndex: 0,
+  text1: {},
 };

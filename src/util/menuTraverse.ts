@@ -10,6 +10,7 @@ export type MenuOpt =
   | 'sign up'
   | 'pcparttracker'
   | 'themeit'
+  | 'ytdata'
   | 'metamask'
   | 'login w/ email'
   | 'coinbase wallet'
@@ -19,7 +20,7 @@ export type MenuOpt =
 export const MENU: Record<MenuId, MenuOpt[]> = {
   '-1': ['connect', 'explore'],
   '0': ['connect wallet', 'login w/ email'],
-  '1': ['pcparttracker', 'themeit'],
+  '1': ['pcparttracker', 'themeit', 'ytdata'],
   '0-0': ['metamask', 'coinbase wallet', 'walletconnect'],
 };
 

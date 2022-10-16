@@ -66,7 +66,7 @@ const animate = (ref: React.MutableRefObject<any>) => {
   setInterval(draw, 35);
 };
 
-const Home: NextPage<IPageProps> = ({}) => {
+const Home: NextPage<IPageProps> = ({ ctx, setCtx }) => {
   const {
     connect: connect0,
     disconnect: disconnect0,
@@ -94,17 +94,8 @@ const Home: NextPage<IPageProps> = ({}) => {
     error: error2,
   } = useConnectWallet('walletconnect');
 
-  const [ctx, setCtx] = useState<IAppContext>(IAppContextInit);
-
   const canvasRef = useRef<any>();
   const textRef1 = useRef<any>();
-
-  const [text1, setText1] = useState<{
-    x?: number;
-    y?: number;
-    width?: number;
-    height?: number;
-  }>({});
 
   const { windowWidth, windowHeight } = useWindow();
   const { cursorX, cursorY } = useCursor();
@@ -133,7 +124,7 @@ const Home: NextPage<IPageProps> = ({}) => {
     if (textRef1 && textRef1.current && windowWidth) {
       const width = textRef1.current.getComputedTextLength();
       const x = windowWidth / 2 - width / 2;
-      setText1({ x, width });
+      setCtx(p => ({ ...p, text1: { x, width } }));
     }
   }, [textRef1, windowWidth]);
 
@@ -169,8 +160,8 @@ const Home: NextPage<IPageProps> = ({}) => {
         setCtx(p => ({
           ...p,
           modalActive: true,
+          menuId: `${ctx.menuIndex}` as MenuId,
           menuIndex: 0,
-          menuId: `0` as MenuId,
         }));
         return;
       }
@@ -226,17 +217,31 @@ const Home: NextPage<IPageProps> = ({}) => {
         return true;
       }
       case 'pcparttracker': {
-        window.open('https://pcparttracker.com/', '_blank');
+        if (process.env.REDIRECTS) {
+          window.open(
+            JSON.parse(process.env.REDIRECTS).pcparttracker,
+            '_blank'
+          );
+        }
         return true;
       }
       case 'themeit': {
-        window.open('https://theme-it-yeqggr54rq-uk.a.run.app', '_blank');
+        if (process.env.REDIRECTS) {
+          window.open(JSON.parse(process.env.REDIRECTS).themeit, '_blank');
+        }
         return true;
       }
+      case 'ytdata': {
+        if (process.env.REDIRECTS) {
+          window.open(
+            `${JSON.parse(process.env.REDIRECTS).ytdata}?auth=${ctx.token}`,
+            '_blank'
+          );
+        }
+      }
       case 'login w/ email': {
-        const token = localStorage.getItem('token');
-        if (token && token !== '') {
-          verifyToken(token);
+        if (ctx.token && ctx.token !== '') {
+          verifyToken(ctx.token);
           return true;
         }
         setCtx(p => ({
@@ -252,6 +257,10 @@ const Home: NextPage<IPageProps> = ({}) => {
       }
     }
   };
+
+  // useEffect(() => {
+  //   console.log(`ctx`, ctx);
+  // }, [ctx]);
 
   return (
     <>
@@ -276,7 +285,7 @@ const Home: NextPage<IPageProps> = ({}) => {
           <text
             id="algocide"
             ref={textRef1}
-            x={text1.x}
+            x={ctx.text1.x}
             y="200"
             fontSize={`${windowWidth / 10}px`}
             letterSpacing={`${windowWidth / 125}px`}
@@ -320,7 +329,7 @@ const Home: NextPage<IPageProps> = ({}) => {
             )}
             <text
               y="200"
-              x={text1.x}
+              x={ctx.text1.x}
               fontSize={`${windowWidth / 10}px`}
               letterSpacing={`${windowWidth / 125}px`}
               fontFamily="Skygraze"
