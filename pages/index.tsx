@@ -234,7 +234,7 @@ const Home: NextPage<IPageProps> = ({ ctx, setCtx }) => {
       case 'ytdata': {
         if (process.env.REDIRECTS) {
           window.open(
-            `${JSON.parse(process.env.REDIRECTS).ytdata}?auth=${ctx.token}`,
+            `${JSON.parse(process.env.REDIRECTS).ytdata}/?token=${ctx.token}`,
             '_blank'
           );
         }

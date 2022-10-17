@@ -2,11 +2,9 @@ import { aes_decode } from '@/src/util/auth/aes';
 import { PrismaClient } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import argon2 from 'argon2';
-import createToken from '@/src/util/auth/createToken';
 
-export interface RefreshRes {
+export interface VerifyTokenRes {
   valid: boolean;
-  updated_token: string;
   message: string;
   age: number;
 }
@@ -17,20 +15,26 @@ const prisma = new PrismaClient({
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<RefreshRes>
+  res: NextApiResponse<VerifyTokenRes>
 ) {
+  const origin = req.headers.origin || '';
+  const allowed_origins = process.env.ALLOWED_ORIGINS || [''];
+  if (origin !== '' && allowed_origins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+
   try {
     const token = JSON.parse(req.body).token;
     const now = Date.now();
     if (!token) {
       res.status(400).json({
         valid: false,
-        updated_token: '',
         message: 'No token provided',
         age: -1,
       });
       return;
     }
+
     const decoded_token = aes_decode(token);
     const [type, id, password, timestamp] = decoded_token.split(':');
 
@@ -43,7 +47,6 @@ export default async function handler(
     if (!user) {
       res.status(400).json({
         valid: false,
-        updated_token: '',
         message: 'No user found for provided token',
         age: now - parseInt(timestamp),
       });
@@ -57,12 +60,6 @@ export default async function handler(
 
     if (verify) {
       res.status(200).json({
-        updated_token: createToken({
-          type: 'web2',
-          userId: id,
-          password: password,
-          timeStamp: Date.now(),
-        }),
         valid: true,
         message: 'Successfully updated token',
         age: now - parseInt(timestamp),
@@ -71,14 +68,12 @@ export default async function handler(
     }
 
     res.status(400).json({
-      updated_token: '',
       message: 'Invalid password',
       valid: false,
       age: now - parseInt(timestamp),
     });
   } catch (err: unknown) {
     res.status(400).json({
-      updated_token: '',
       message: 'Invalid token',
       valid: false,
       age: -1,
