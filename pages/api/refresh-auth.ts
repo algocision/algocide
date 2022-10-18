@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import argon2 from 'argon2';
 import createToken from '@/src/util/auth/createToken';
+import { db } from '@/src/db/PrismaDB';
 
 export interface RefreshRes {
   valid: boolean;
@@ -10,10 +11,6 @@ export interface RefreshRes {
   message: string;
   age: number;
 }
-
-const prisma = new PrismaClient({
-  datasources: { db: { url: process.env.DATABASE_URL } },
-});
 
 export default async function handler(
   req: NextApiRequest,
@@ -34,7 +31,7 @@ export default async function handler(
     const decoded_token = aes_decode(token);
     const [type, id, password, timestamp] = decoded_token.split(':');
 
-    const user = await prisma.user.findUnique({
+    const user = await db.user.findUnique({
       where: {
         userId: id,
       },

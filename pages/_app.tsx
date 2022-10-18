@@ -1,10 +1,6 @@
-import { useConnectWallet } from '@/src/components/ConnectWallet/useConnectWallet';
 import { useWallet } from '@/src/hooks/useWallets';
 import IAppContext, { IAppContextInit } from '@/src/types/IAppContext';
-import getToken from '@/src/util/auth/getToken';
 import refreshToken from '@/src/util/auth/refreshToken';
-import { verify } from '@/src/util/auth/verify';
-import { providers } from 'ethers';
 import { NextPage } from 'next';
 import { AppProps } from 'next/app';
 import Script from 'next/script';

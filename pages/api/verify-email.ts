@@ -41,7 +41,7 @@ export default async function handler(
     const options = {
       from: 'algocide@gmail.com',
       to: email,
-      subject: `Your code is ${code}`, 
+      subject: `Your code is ${code}`,
       html: `<!DOCTYPE html>
       <html>
       <head>

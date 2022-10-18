@@ -84,8 +84,7 @@ export const Modal: React.FC<Props> = ({ ctx, setCtx, engageItem }) => {
   const emailRef = useRef<string>('');
 
   const [error, setError] = useState<boolean>(false);
-  const [code, setCode] = useState<string>('-1');
-  // const [email, setEmail] = useState<string>('');
+  const [code, setCode] = useState<string>('-1'); 
 
   const [state, setState] = useState<SignInStates>('not logged in');
 

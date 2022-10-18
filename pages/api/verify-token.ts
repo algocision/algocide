@@ -2,16 +2,13 @@ import { aes_decode } from '@/src/util/auth/aes';
 import { PrismaClient } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import argon2 from 'argon2';
+import { db } from '@/src/db/PrismaDB';
 
 export interface VerifyTokenRes {
   valid: boolean;
   message: string;
   age: number;
 }
-
-const prisma = new PrismaClient({
-  datasources: { db: { url: process.env.DATABASE_URL } },
-});
 
 export default async function handler(
   req: NextApiRequest,
@@ -38,7 +35,7 @@ export default async function handler(
     const decoded_token = aes_decode(token);
     const [type, id, password, timestamp] = decoded_token.split(':');
 
-    const user = await prisma.user.findUnique({
+    const user = await db.user.findUnique({
       where: {
         userId: id,
       },
@@ -61,7 +58,7 @@ export default async function handler(
     if (verify) {
       res.status(200).json({
         valid: true,
-        message: 'Successfully updated token',
+        message: 'Valid token',
         age: now - parseInt(timestamp),
       });
       return;

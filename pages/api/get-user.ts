@@ -1,10 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { PrismaClient } from '@prisma/client';
 import { IUser } from 'prisma/schema';
-
-const prisma = new PrismaClient({
-  datasources: { db: { url: process.env.DATABASE_URL } },
-});
+import { db } from '@/src/db/PrismaDB';
 
 export default async function handler(
   req: NextApiRequest,
@@ -13,7 +10,7 @@ export default async function handler(
   const userData: IUser = JSON.parse(req.body);
 
   try {
-    const user = await prisma.user.findFirst({
+    const user = await db.user.findFirst({
       where: {
         walletAddress: userData.walletAddress,
         email: userData.email,

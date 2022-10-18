@@ -6,10 +6,7 @@ import argon2 from 'argon2';
 import { aes_decode } from '@/src/util/auth/aes';
 import { compress } from '@/src/util/UUID';
 import createToken from '@/src/util/auth/createToken';
-
-const prisma = new PrismaClient({
-  datasources: { db: { url: process.env.DATABASE_URL } },
-});
+import { db } from '@/src/db/PrismaDB';
 
 export interface ICreateUserReq {
   type: 'web3' | 'web2';
@@ -38,7 +35,7 @@ export default async function handler(
   if (createUserReq.type === 'web3') {
     const userPayload = createUserReq.payload as Web3UserCreate;
     try {
-      const user = await prisma.user.findFirst({
+      const user = await db.user.findFirst({
         where: {
           walletAddress: userPayload.walletAddress,
         },
@@ -55,7 +52,7 @@ export default async function handler(
       } else {
         // Create user
         const id = uuid();
-        const new_user = await prisma.user.create({
+        const new_user = await db.user.create({
           data: {
             userId: compress(id),
             username: userPayload.username
@@ -87,7 +84,7 @@ export default async function handler(
   } else {
     const userPayload = createUserReq.payload as Web2UserCreate;
     try {
-      const user = await prisma.user.findFirst({
+      const user = await db.user.findFirst({
         where: {
           email: userPayload.email,
         },
@@ -107,7 +104,7 @@ export default async function handler(
         const hashed_password = await argon2.hash(
           aes_decode(userPayload.password)
         );
-        const new_user = await prisma.user.create({
+        const new_user = await db.user.create({
           data: {
             userId: compress(id),
             username: userPayload.username

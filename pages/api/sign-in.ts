@@ -4,10 +4,7 @@ import { IUser } from 'prisma/schema';
 import argon2 from 'argon2';
 import { aes_decode, aes_encode } from '@/src/util/auth/aes';
 import createToken from '@/src/util/auth/createToken';
-
-const prisma = new PrismaClient({
-  datasources: { db: { url: process.env.DATABASE_URL } },
-});
+import { db } from '@/src/db/PrismaDB';
 
 export interface SignInRes {
   message: string;
@@ -39,7 +36,7 @@ export default async function handler(
   const userData: ICreateUserReq = JSON.parse(req.body);
 
   try {
-    const user = await prisma.user.findFirst({
+    const user = await db.user.findFirst({
       where:
         userData.type === 'web3'
           ? {

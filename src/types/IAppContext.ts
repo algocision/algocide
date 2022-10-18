@@ -11,7 +11,7 @@ export default interface IAppContext {
   triggerLoginReset: number;
   emailFlowActive: boolean;
   menuIndex: number;
-  text1: { x?: number; y?: number; width?: number; height?: number };
+  text1: { x?: number; y?: number | string; width?: number; height?: number };
 }
 
 export const IAppContextInit: IAppContext = {

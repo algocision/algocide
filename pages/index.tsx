@@ -123,8 +123,12 @@ const Home: NextPage<IPageProps> = ({ ctx, setCtx }) => {
   useEffect(() => {
     if (textRef1 && textRef1.current && windowWidth) {
       const width = textRef1.current.getComputedTextLength();
+      const height = textRef1.current.getBoundingClientRect().height;
       const x = windowWidth / 2 - width / 2;
-      setCtx(p => ({ ...p, text1: { x, width } }));
+      setCtx(p => ({
+        ...p,
+        text1: { x, width, height: height, y: `calc(20% - ${height / 2}px)` },
+      }));
     }
   }, [textRef1, windowWidth]);
 
@@ -133,6 +137,12 @@ const Home: NextPage<IPageProps> = ({ ctx, setCtx }) => {
   }, []);
 
   useEffect(() => {
+    if (ctx.emailFlowActive) {
+      // Block enter key from interfering with key listener in
+      // @/src/components/EmailLogin/index.tsx
+      return;
+    }
+
     if (keys.up === 1) {
       setCtx(p => ({
         ...p,
@@ -151,11 +161,6 @@ const Home: NextPage<IPageProps> = ({ ctx, setCtx }) => {
     }
 
     if (keys.enter === 1) {
-      if (ctx.emailFlowActive) {
-        // Block enter key from interfering with key listener in
-        // @/src/components/EmailLogin/index.tsx
-        return;
-      }
       if (ctx.menuId === '-1') {
         setCtx(p => ({
           ...p,
@@ -258,10 +263,6 @@ const Home: NextPage<IPageProps> = ({ ctx, setCtx }) => {
     }
   };
 
-  // useEffect(() => {
-  //   console.log(`ctx`, ctx);
-  // }, [ctx]);
-
   return (
     <>
       <Head>
@@ -285,8 +286,9 @@ const Home: NextPage<IPageProps> = ({ ctx, setCtx }) => {
           <text
             id="algocide"
             ref={textRef1}
+            className={styles.algocideText}
             x={ctx.text1.x}
-            y="200"
+            y={ctx.text1.y}
             fontSize={`${windowWidth / 10}px`}
             letterSpacing={`${windowWidth / 125}px`}
             fontFamily="Skygraze"
@@ -328,7 +330,7 @@ const Home: NextPage<IPageProps> = ({ ctx, setCtx }) => {
               />
             )}
             <text
-              y="200"
+              y={ctx.text1.y}
               x={ctx.text1.x}
               fontSize={`${windowWidth / 10}px`}
               letterSpacing={`${windowWidth / 125}px`}
